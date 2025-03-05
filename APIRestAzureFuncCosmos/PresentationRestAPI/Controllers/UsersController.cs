@@ -8,11 +8,9 @@ namespace PresentationRestAPI.Controllers;
 [ApiController]
 [Produces(UtilityConsts.APPJSON)]
 [Route("[controller]")]
-public class UserController(IUserService userService) : ControllerBase
+public class UsersController(IUserService userService) : ControllerBase
 {
-    const string ROUTE_NAME = "user";
     private readonly IUserService _userService = userService;
-
 
     /// <summary>
     /// Get all users.
@@ -28,7 +26,7 @@ public class UserController(IUserService userService) : ControllerBase
     /// <response code="200">Ok</response>
     /// <response code="400">Bad Request</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet($"{ROUTE_NAME}s")]
+    [HttpGet]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<UserDTO>))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -61,7 +59,7 @@ public class UserController(IUserService userService) : ControllerBase
     /// <response code="400">Bad Request</response>
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet($"{ROUTE_NAME}/{{email}}")]
+    [HttpGet("{{email}}")]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(UserDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
@@ -74,7 +72,7 @@ public class UserController(IUserService userService) : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -109,7 +107,7 @@ public class UserController(IUserService userService) : ControllerBase
     /// </remarks>
     /// <response code="201">Created</response>
     /// <response code="400">Bad Request</response>
-    [HttpPost(ROUTE_NAME)]
+    [HttpPost]
     [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -119,7 +117,7 @@ public class UserController(IUserService userService) : ControllerBase
         {
             if (userDTO == null)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
             }
 
             var createdUser = await _userService.CreateAsync(userDTO, cancellationToken);

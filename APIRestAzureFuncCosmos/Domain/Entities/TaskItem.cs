@@ -1,10 +1,10 @@
-﻿using Domain.Consts;
-using Domain.Enums;
+﻿using Domain.Enums;
 using Domain.Interfaces;
 using Domain.States;
 using Domain.ValueObjects;
 using Newtonsoft.Json;
 using Shared;
+using Shared.Consts;
 using Shared.Exceptions;
 using Shared.Interfaces;
 
@@ -62,25 +62,31 @@ public class TaskItem
 
     public void SetCompletedAt(DateTime dateTime) => CompletedAt = dateTime;
 
-    public static void ValidateCreation(string title, string description, DateTime? deadline, IDateTimeProvider? dateTimeProvider = null)
+    public static void ValidateCreation(Guid? id,
+                                        string title,
+                                        string description,
+                                        DateTime? deadline,
+                                        DateTime? createdAt,
+                                        DateTime? completedAt,
+                                        IDateTimeProvider? dateTimeProvider = null)
     {
-        dateTimeProvider ??= new DateTimeProvider();
+        BasicValidation(title, description, deadline, createdAt, completedAt, dateTimeProvider);
 
-        if (string.IsNullOrWhiteSpace(title))
-            throw new DomainException(Constants.VALIDATION_TASK_TITLE_NOT_EMPTY);
+        if (id != null && id != Guid.Empty)
+            throw new DomainException(Constants.VALIDATION_TASK_ID_NOT_EMPTY);
 
-        if (title.Length > 100)
-            throw new DomainException(Constants.VALIDATION_TASK_TITLE_LENGTH);
+        if (createdAt != null && createdAt.HasValue)
+            throw new DomainException(Constants.VALIDATION_TASK_CREATED_AT_NOT_EMPTY);
 
-        if (string.IsNullOrWhiteSpace(description))
-            throw new DomainException(Constants.VALIDATION_TASK_DESCRIPTION_NOT_EMPTY);
-
-        if (deadline.HasValue && deadline.Value < dateTimeProvider.GetUTCNow())
-            throw new DomainException(Constants.VALIDATION_TASK_DEADLINE_NOT_PAST);
     }
 
-    public void ValidateUpdate(IDateTimeProvider? dateTimeProvider = null) =>
-        ValidateCreation(Title, Description, Deadline, dateTimeProvider);
+    public void ValidateUpdate(IDateTimeProvider? dateTimeProvider = null)
+    {
+        BasicValidation(Title, Description, Deadline, CreatedAt, CompletedAt, dateTimeProvider);
+
+        if (Id == Guid.Empty)
+            throw new DomainException(Constants.VALIDATION_TASK_ID_EMPTY);
+    }
 
     public void UpdateTask(string title, string description, DateTime? deadline, TaskItemStatus? newTaskItemStatus)
     {
@@ -102,6 +108,12 @@ public class TaskItem
         Status = newStatus;
     }
 
+    public void AssignToUser(User user)
+    {
+        AssignedUserEmail = user.Id;
+        AssignedUser = user;
+    }
+
     private void UpdateTaskState(TaskItemStatus? newTaskItemStatus)
     {
         if (newTaskItemStatus != null && newTaskItemStatus != Status)
@@ -110,9 +122,28 @@ public class TaskItem
         }
     }
 
-    public void AssignToUser(User user)
+    private static void BasicValidation(string title,
+                                         string description,
+                                         DateTime? deadline,
+                                         DateTime? createdAt,
+                                         DateTime? completedAt,
+                                         IDateTimeProvider? dateTimeProvider = null)
     {
-        AssignedUserEmail = user.Id;
-        AssignedUser = user;
+        dateTimeProvider ??= new DateTimeProvider();
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new DomainException(Constants.VALIDATION_TASK_TITLE_NOT_EMPTY);
+
+        if (title.Length > 100)
+            throw new DomainException(Constants.VALIDATION_TASK_TITLE_LENGTH);
+
+        if (string.IsNullOrWhiteSpace(description))
+            throw new DomainException(Constants.VALIDATION_TASK_DESCRIPTION_NOT_EMPTY);
+
+        if (deadline != null && deadline.HasValue && deadline.Value < dateTimeProvider.GetUTCNow())
+            throw new DomainException(Constants.VALIDATION_TASK_DEADLINE_NOT_PAST);
+
+        if (completedAt != null && completedAt.HasValue)
+            throw new DomainException(Constants.VALIDATION_TASK_COMPLETE_AT_NOT_EMPTY);
     }
 }

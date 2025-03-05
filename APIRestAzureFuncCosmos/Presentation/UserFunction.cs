@@ -22,7 +22,7 @@ namespace Presentation;
 
 public class UserFunction(IUserService userService, IExceptionHandler exceptionHandler)
 {
-    const string ROUTE_NAME = "user";
+    const string ROUTE_NAME = "users";
     private readonly IUserService _userService = userService;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
 
@@ -43,7 +43,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<UserDTO>), Description = "Get all the users")]
     [FunctionName(nameof(GetAllUsers))]
     public async Task<IActionResult> GetAllUsers(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}s")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -91,7 +91,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -146,7 +146,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
 
             if (createUserDto == null)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);

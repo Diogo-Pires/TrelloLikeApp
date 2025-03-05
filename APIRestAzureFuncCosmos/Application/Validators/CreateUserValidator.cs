@@ -1,6 +1,6 @@
 ﻿using Application.DTOs;
-using Domain.Consts;
 using FluentValidation;
+using Shared.Consts;
 
 namespace Application.Validators;
 

@@ -1,5 +1,5 @@
-﻿using Domain.Consts;
-using Shared;
+﻿using Shared;
+using Shared.Consts;
 using Shared.Exceptions;
 using Shared.Interfaces;
 

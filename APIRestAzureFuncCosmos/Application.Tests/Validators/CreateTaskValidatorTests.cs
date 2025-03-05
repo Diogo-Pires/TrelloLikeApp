@@ -18,7 +18,7 @@ public class CreateTaskValidatorTests
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime.AddDays(1), null);
+        var taskDto = new TaskDTO("Test Task", "Test Description", TaskItemStatus.Pending, null, null);
        
         //Act
         var result = _validator.Validate(taskDto);
@@ -32,7 +32,7 @@ public class CreateTaskValidatorTests
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime.AddDays(1), null);
+        var taskDto = new TaskDTO("", "Test Description", TaskItemStatus.Pending, dateTime, null);
 
         //Act
         var result = _validator.Validate(taskDto);
@@ -47,7 +47,7 @@ public class CreateTaskValidatorTests
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime.AddDays(-1), null);
+        var taskDto = new TaskDTO("Test Task", "Test Description", TaskItemStatus.Pending, dateTime,  null);
 
         //Act
         var result = _validator.Validate(taskDto);

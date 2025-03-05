@@ -76,7 +76,7 @@ public class TaskService(ITaskRepository taskRepository,
         var existingTask = await _taskRepository.GetByIdAsync(updateTaskDto.Id, cancellationToken);
         if (existingTask == null)
         {
-            return Result.Fail(new Error(UtilityConsts.VALIDATION_TASK_NOT_FOUND));
+            return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
         }
 
         try
@@ -101,7 +101,7 @@ public class TaskService(ITaskRepository taskRepository,
         var updatedTask = await _taskRepository.UpdateAsync(existingTask, cancellationToken);
         if (updatedTask == null)
         {
-            return Result.Fail(new Error(UtilityConsts.VALIDATION_TASK_NOT_FOUND));
+            return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
         }
 
         await _cacheService.RemoveAsync($"{CacheKey}{updatedTask.Id}");
@@ -128,13 +128,13 @@ public class TaskService(ITaskRepository taskRepository,
         var existingTask = await _taskRepository.GetByIdAsync(taskId, cancellationToken);
         if (existingTask == null)
         {
-            return Result.Fail(new Error(UtilityConsts.VALIDATION_TASK_NOT_FOUND));
+            return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
         }
 
         var existingUser = await _userRepository.GetByEmailAsync(email, cancellationToken);
         if (existingUser == null)
         {
-            return Result.Fail(new Error(UtilityConsts.VALIDATION_USER_NOT_FOUND));
+            return Result.Fail(new Error(Constants.VALIDATION_USER_NOT_FOUND));
         }
 
         existingTask.AssignToUser(existingUser);

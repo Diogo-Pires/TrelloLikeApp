@@ -22,7 +22,7 @@ namespace Presentation;
 
 public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionHandler)
 {
-    const string ROUTE_NAME = "task";
+    const string ROUTE_NAME = "tasks";
     private readonly ITaskService _taskService = taskService;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
 
@@ -43,7 +43,7 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<TaskDTO>), Description = "Get all the tasks")]
     [FunctionName(nameof(GetAllTasks))]
     public async Task<IActionResult> GetAllTasks(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}s")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -91,7 +91,7 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
             }
 
             var task = await _taskService.GetByIdAsync(id, cancellationToken);
@@ -147,7 +147,7 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
 
             if (createTaskDto == null)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
             }
 
             var createdTask = await _taskService.CreateAsync(createTaskDto, cancellationToken);
@@ -211,12 +211,12 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
 
             if (updateTaskDto == null)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
             }
 
             if (updateTaskDto.Id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
             }
 
             var updatedTask = await _taskService.UpdateAsync(updateTaskDto, cancellationToken);
@@ -267,7 +267,7 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
             }
 
             var deleted = await _taskService.DeleteAsync(id, cancellationToken);
@@ -321,12 +321,12 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
         {
             if (taskId == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
             }
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
             }
 
             var task = await _taskService.AssignTaskToUserAsync(taskId, email, cancellationToken);
