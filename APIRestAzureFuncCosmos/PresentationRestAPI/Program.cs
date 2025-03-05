@@ -14,6 +14,7 @@ using Infrastructure.Config;
 using FluentValidation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache(); 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddLogging(logging =>
 {

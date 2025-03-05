@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Mappers;
 using Domain.Entities;
 using FluentValidation;
 using Shared.Exceptions;
@@ -14,7 +15,17 @@ public class CreateTaskValidator : AbstractValidator<TaskDTO>
             {
                 try
                 {
-                    TaskItem.ValidateCreation(task.Title, task.Description, task.Deadline);
+                    TaskItem.ValidateCreation(task.Id,
+                                              task.Title,
+                                              task.Description,
+                                              task.Deadline,
+                                              task.CreatedAt,
+                                              task.CompletedAt);
+
+                    if(task.User != null)
+                    {
+                        //User.
+                    }
                 }
                 catch (DomainException ex)
                 {

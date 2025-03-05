@@ -1,9 +1,9 @@
 using Domain.Enums;
-using Domain.Consts;
 using Shared.Exceptions;
 using Domain.Entities;
 using Moq;
 using Shared.Interfaces;
+using Shared.Consts;
 
 namespace Domain.Tests.Entities;
 
@@ -49,9 +49,12 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(string.Empty,
+            TaskItem.ValidateCreation(null,
+                                      string.Empty,
                                       "Valid Description",
                                       DateTime.UtcNow.AddDays(1),
+                                      null,
+                                      null,
                                       _dateTimeMockService.Object));
 
         Assert.Equal(Constants.VALIDATION_TASK_TITLE_NOT_EMPTY, exception.Message);
@@ -69,14 +72,39 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(longTitle,
+            TaskItem.ValidateCreation(null,
+                                      longTitle,
                                       "Valid Description",
                                       DateTime.UtcNow.AddDays(1),
+                                      null,
+                                      null,
                                       _dateTimeMockService.Object));
 
         Assert.Equal(Constants.VALIDATION_TASK_TITLE_LENGTH, exception.Message);
     }
 
+    [Fact]
+    public void ValidateCreation_ShouldThrowException_WhenCreateAtIsProvided()
+    {
+        //Arrange
+        var datetime = new DateTime(2025, 1, 1);
+
+        _dateTimeMockService
+            .Setup(m => m.GetUTCNow())
+            .Returns(datetime.AddDays(1));
+
+        // Act & Assert
+        var exception = Assert.Throws<DomainException>(() =>
+            TaskItem.ValidateCreation(null, 
+                                      "Valid Title",
+                                      "Valid Description",
+                                      datetime.AddDays(1),
+                                      DateTime.UtcNow,
+                                      null,
+                                      _dateTimeMockService.Object));
+
+        Assert.Equal(Constants.VALIDATION_TASK_CREATED_AT_NOT_EMPTY, exception.Message);
+    }
     [Fact]
     public void ValidateCreation_ShouldThrowException_WhenDeadlineIsInPast()
     {
@@ -89,13 +117,17 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation("Valid Title",
+            TaskItem.ValidateCreation(null,
+                                      "Valid Title",
                                       "Valid Description",
                                       datetime,
+                                      null,
+                                      null,
                                       _dateTimeMockService.Object));
 
         Assert.Equal(Constants.VALIDATION_TASK_DEADLINE_NOT_PAST, exception.Message);
     }
+
 
     [Fact]
     public void UpdateTask_ShouldUpdateFieldsCorrectly()

@@ -1,8 +1,8 @@
-﻿using Domain.Consts;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Domain.Enums;
 using Domain.States;
 using Moq;
+using Shared.Consts;
 using Shared.Exceptions;
 using Shared.Interfaces;
 

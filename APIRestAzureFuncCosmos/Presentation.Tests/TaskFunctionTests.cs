@@ -84,12 +84,13 @@ public class TaskFunctionTests
     {
         // Arrange
         var dateTime = DateTime.UtcNow;
-        var taskId = Guid.NewGuid();
-        var taskDto = new TaskDTO(taskId, "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskDTO("Test Task", "Test Description", TaskItemStatus.Pending, null, null);
         var response = Result.Ok(taskDto);
+
         _taskServiceMock
             .Setup(s => s.CreateAsync(It.IsAny<TaskDTO>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
+
         var req = new Mock<HttpRequest>();
         var json = JsonConvert.SerializeObject(taskDto);
         req.Setup(r => r.Body).Returns(new MemoryStream(Encoding.UTF8.GetBytes(json)));

@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Consts\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>
 

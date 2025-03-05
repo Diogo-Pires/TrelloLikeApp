@@ -37,11 +37,11 @@ public class TaskRepository : ITaskRepository
         return taskList;
     }
 
-    public async Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<TaskItem?> GetByIdAsync(Guid? id, CancellationToken cancellationToken)
     {
         try
         {
-            var idString = id.ToString();
+            var idString = id?.ToString();
             return await _container.ReadItemAsync<TaskItem>(idString, new PartitionKey(idString), cancellationToken: cancellationToken);
         }
         catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
