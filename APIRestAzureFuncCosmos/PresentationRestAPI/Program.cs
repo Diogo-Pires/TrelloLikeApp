@@ -1,6 +1,5 @@
 using Application.Interfaces;
 using Application.Services;
-using Application.Validators;
 using PresentationRestAPI.Exceptions;
 using Shared.Interfaces;
 using Shared;
@@ -15,6 +14,7 @@ using FluentValidation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using System.Text.Json.Serialization;
+using PresentationRestAPI.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 

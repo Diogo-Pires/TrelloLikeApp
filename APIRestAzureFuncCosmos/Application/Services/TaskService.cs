@@ -1,7 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using Application.Mappers;
-using Domain.Entities;
 using FluentResults;
 using FluentValidation;
 using Shared.Consts;
@@ -12,16 +11,12 @@ namespace Application.Services;
 
 public class TaskService(ITaskRepository taskRepository,
                          IUserRepository userRepository,
-                         IValidator<TaskDTO> createValidator,
-                         IValidator<TaskItem> updateValidator,
                          IHybridCacheService hybridCacheService,
                          IDateTimeProvider dateTimeProvider) : BaseHybridCacheService, ITaskService
 {
     private readonly ITaskRepository _taskRepository = taskRepository;
     private readonly IUserRepository _userRepository = userRepository;
-    private readonly IHybridCacheService _cacheService = hybridCacheService;
-    private readonly IValidator<TaskDTO> _createValidator = createValidator;
-    private readonly IValidator<TaskItem> _updateValidator = updateValidator;    
+    private readonly IHybridCacheService _cacheService = hybridCacheService; 
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
 
     protected override string CacheKey { get => "task:"; }
@@ -56,13 +51,6 @@ public class TaskService(ITaskRepository taskRepository,
     public async Task<Result<TaskDTO>> CreateAsync(TaskDTO createTaskDto,
                                                    CancellationToken cancellationToken)
     {
-        var validationResult = await _createValidator.ValidateAsync(createTaskDto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => e.ErrorMessage);
-            return Result.Fail(errors);
-        }
-
         var taskEntity = TaskMapper.ToEntity(createTaskDto, _dateTimeProvider);
         var createdTask = await _taskRepository.AddAsync(taskEntity, cancellationToken);
         
@@ -89,13 +77,6 @@ public class TaskService(ITaskRepository taskRepository,
         catch (DomainException ex)
         {
             return Result.Fail(new Error(ex.Message));
-        }
-
-        var validationResult = await _updateValidator.ValidateAsync(existingTask, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            var errors = validationResult.Errors.Select(e => e.ErrorMessage);
-            return Result.Fail(errors);
         }
 
         var updatedTask = await _taskRepository.UpdateAsync(existingTask, cancellationToken);

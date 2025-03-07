@@ -14,8 +14,6 @@ public class BaseHybridCacheServiceTest
 {
     private readonly Mock<ITaskRepository> _taskRepositoryMock;
     private readonly Mock<IUserRepository> _userRepositoryMock;
-    private readonly Mock<IValidator<TaskDTO>> _createValidatorMock;
-    private readonly Mock<IValidator<TaskItem>> _updateValidatorMock;
     private readonly Mock<IHybridCacheService> _cacheServiceMock;
     private readonly Mock<IDateTimeProvider> _dateTimeProviderMock;
     private readonly TaskService _taskService;
@@ -24,16 +22,12 @@ public class BaseHybridCacheServiceTest
     {
         _taskRepositoryMock = new Mock<ITaskRepository>();
         _userRepositoryMock = new Mock<IUserRepository>();
-        _createValidatorMock = new Mock<IValidator<TaskDTO>>();
-        _updateValidatorMock = new Mock<IValidator<TaskItem>>();
         _cacheServiceMock = new Mock<IHybridCacheService>();
         _dateTimeProviderMock = new Mock<IDateTimeProvider>();
 
         _taskService = new TaskService(
             _taskRepositoryMock.Object,
             _userRepositoryMock.Object,
-            _createValidatorMock.Object,
-            _updateValidatorMock.Object,
             _cacheServiceMock.Object,
             _dateTimeProviderMock.Object
         );
@@ -46,10 +40,6 @@ public class BaseHybridCacheServiceTest
         var dateTime = DateTime.UtcNow;
         var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
         var taskEntity = TaskMapper.ToEntity(taskDto, _dateTimeProviderMock.Object);
-
-        _createValidatorMock
-            .Setup(v => v.ValidateAsync(taskDto, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FluentValidation.Results.ValidationResult());
 
         _taskRepositoryMock
             .Setup(repo => repo.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()))

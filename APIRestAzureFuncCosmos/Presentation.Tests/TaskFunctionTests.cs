@@ -1,8 +1,10 @@
 using System.Text;
 using Application.DTOs;
 using Application.Interfaces;
+using Domain.Entities;
 using Domain.Enums;
 using FluentResults;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -14,14 +16,21 @@ namespace Presentation.Tests;
 public class TaskFunctionTests
 {
     private readonly Mock<ITaskService> _taskServiceMock;
-    private readonly Mock<IExceptionHandler> _exceptionHandlerMock;
+    private readonly Mock<IExceptionHandler> _exceptionHandlerMock; 
+    private readonly Mock<IValidator<TaskDTO>> _createValidatorMock;
+    private readonly Mock<IValidator<TaskDTO>> _updateValidatorMock;
     private readonly TaskFunction _taskFunction;
 
     public TaskFunctionTests()
     {
         _taskServiceMock = new Mock<ITaskService>();
         _exceptionHandlerMock = new Mock<IExceptionHandler>();
-        _taskFunction = new TaskFunction(_taskServiceMock.Object, _exceptionHandlerMock.Object);
+        _createValidatorMock = new Mock<IValidator<TaskDTO>>();
+        _updateValidatorMock = new Mock<IValidator<TaskDTO>>();
+        _taskFunction = new TaskFunction(_taskServiceMock.Object,
+                                         _exceptionHandlerMock.Object,
+                                         _createValidatorMock.Object,
+                                         _updateValidatorMock.Object);
     }
 
     [Fact]

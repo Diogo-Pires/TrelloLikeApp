@@ -1,6 +1,5 @@
 ﻿using Application.Interfaces;
 using Application.Services;
-using Application.Validators;
 using FluentValidation;
 using Infrastructure.Cache;
 using Infrastructure.Config;
@@ -16,6 +15,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Presentation.Exceptions;
 using Presentation.Interfaces;
+using Presentation.Validators;
 using Shared;
 using Shared.Consts;
 using Shared.Interfaces;

@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -20,11 +21,16 @@ using System.Threading.Tasks;
 
 namespace Presentation;
 
-public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionHandler)
+public class TaskFunction(ITaskService taskService,
+                          IExceptionHandler exceptionHandler,
+                          IValidator<TaskDTO> createValidator,
+                          IValidator<TaskDTO> updateValidator)
 {
     const string ROUTE_NAME = "tasks";
     private readonly ITaskService _taskService = taskService;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
+    private readonly IValidator<TaskDTO> _createValidator = createValidator;
+    private readonly IValidator<TaskDTO> _updateValidator = updateValidator;
 
     /// <summary>
     /// Get all tasks.
@@ -145,9 +151,10 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
             var createTaskDto = JsonConvert.DeserializeObject<TaskDTO>(requestBody);
 
-            if (createTaskDto == null)
+            var validationResult = await _createValidator.ValidateAsync(createTaskDto, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var createdTask = await _taskService.CreateAsync(createTaskDto, cancellationToken);
@@ -209,14 +216,10 @@ public class TaskFunction(ITaskService taskService, IExceptionHandler exceptionH
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
             var updateTaskDto = JsonConvert.DeserializeObject<TaskDTO>(requestBody);
 
-            if (updateTaskDto == null)
+            var validationResult = await _updateValidator.ValidateAsync(updateTaskDto, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
-            }
-
-            if (updateTaskDto.Id == Guid.Empty)
-            {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var updatedTask = await _taskService.UpdateAsync(updateTaskDto, cancellationToken);

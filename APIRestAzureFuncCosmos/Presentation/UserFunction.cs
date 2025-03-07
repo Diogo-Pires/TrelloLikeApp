@@ -1,5 +1,6 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -20,10 +21,13 @@ using System.Threading.Tasks;
 
 namespace Presentation;
 
-public class UserFunction(IUserService userService, IExceptionHandler exceptionHandler)
+public class UserFunction(IUserService userService,
+                          IValidator<UserDTO> createValidator, 
+                          IExceptionHandler exceptionHandler)
 {
     const string ROUTE_NAME = "users";
     private readonly IUserService _userService = userService;
+    private readonly IValidator<UserDTO> _createValidator = createValidator;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
 
     /// <summary>
@@ -144,9 +148,10 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
             var createUserDto = JsonConvert.DeserializeObject<UserDTO>(requestBody);
 
-            if (createUserDto == null)
+            var validationResult = await _createValidator.ValidateAsync(createUserDto, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);

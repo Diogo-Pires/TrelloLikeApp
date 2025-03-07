@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Consts;
 
@@ -114,13 +115,16 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateTask(TaskDTO taskDTO, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateTask(TaskDTO taskDTO,
+                                                [FromServices]IValidator<TaskDTO> createValidator,
+                                                CancellationToken cancellationToken)
     {
         try
         {
-            if (taskDTO == null)
+            var validationResult = await createValidator.ValidateAsync(taskDTO, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var createdTask = await _taskService.CreateAsync(taskDTO, cancellationToken);
@@ -131,7 +135,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
 
             return new CreatedAtActionResult(
                 nameof(GetTaskById),
-                "Task",
+                "Tasks",
                 new { id = createdTask.Value.Id },
                 createdTask
             );
@@ -169,18 +173,16 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateTask(TaskDTO taskDTO, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateTask(TaskDTO taskDTO,
+                                                [FromServices]IValidator<TaskDTO> updateValidator,
+                                                CancellationToken cancellationToken)
     {
         try
         {
-            if (taskDTO == null)
+            var validationResult = await updateValidator.ValidateAsync(taskDTO, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
-            }
-
-            if (taskDTO.Id == Guid.Empty)
-            {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var updatedTask = await _taskService.UpdateAsync(taskDTO, cancellationToken);
@@ -264,13 +266,13 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AssignedUserToATask(
-        Guid taskId,
+        Guid id,
         string email,
         CancellationToken cancellationToken)
     {
         try
         {
-            if (taskId == Guid.Empty)
+            if (id == Guid.Empty)
             {
                 return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
             }
@@ -280,7 +282,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
                 return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
             }
 
-            var task = await _taskService.AssignTaskToUserAsync(taskId, email, cancellationToken);
+            var task = await _taskService.AssignTaskToUserAsync(id, email, cancellationToken);
             if (task == null)
             {
                 return new NotFoundResult();

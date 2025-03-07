@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Interfaces;
 using FluentResults;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -14,6 +15,7 @@ public class UserFunctionTests
 {
     private readonly Mock<IUserService> _mockUserService;
     private readonly Mock<IExceptionHandler> _mockExceptionHandler;
+    private readonly Mock<IValidator<UserDTO>> _createValidatorMock;
     private readonly UserFunction _userFunction;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
@@ -21,7 +23,10 @@ public class UserFunctionTests
     {
         _mockUserService = new Mock<IUserService>();
         _mockExceptionHandler = new Mock<IExceptionHandler>();
-        _userFunction = new UserFunction(_mockUserService.Object, _mockExceptionHandler.Object);
+        _createValidatorMock = new Mock<IValidator<UserDTO>>();
+        _userFunction = new UserFunction(_mockUserService.Object,
+                                         _createValidatorMock.Object,
+                                         _mockExceptionHandler.Object);
     }
 
     [Fact]

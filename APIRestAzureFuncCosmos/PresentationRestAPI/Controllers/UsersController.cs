@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Consts;
 
@@ -111,13 +112,16 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateUser(UserDTO userDTO, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateUser(UserDTO userDTO,
+                                                [FromServices] IValidator<UserDTO> createValidator,
+                                                CancellationToken cancellationToken)
     {
         try
         {
-            if (userDTO == null)
+            var validationResult = await createValidator.ValidateAsync(userDTO, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var createdUser = await _userService.CreateAsync(userDTO, cancellationToken);
