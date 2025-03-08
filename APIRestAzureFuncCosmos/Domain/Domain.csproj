@@ -7,16 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TaskEntity\**" />
+    <EmbeddedResource Remove="TaskEntity\**" />
+    <None Remove="TaskEntity\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Consts\" />
-    <Folder Include="Exceptions\" />
   </ItemGroup>
 
 </Project>

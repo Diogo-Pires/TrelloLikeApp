@@ -1,9 +1,11 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Application.Mappers;
-using Application.Services;
+﻿using Application.Cache.Interfaces;
+using Application.DTOs;
+using Application.Task.Mappers;
+using Application.Task.Services;
 using Domain.Entities;
-using Domain.Enums;
+using Domain.Task.Enums;
+using Domain.Task.Interfaces;
+using Domain.User.Interfaces;
 using FluentValidation;
 using Moq;
 using Shared.Interfaces;
@@ -38,10 +40,10 @@ public class TaskServiceTests
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
         var taskEntity = TaskMapper.ToEntity(taskDto, _dateTimeProviderMock.Object);
 
-        _taskRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()))
+        _taskRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<TaskEntity>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(taskEntity);
 
         //Act
@@ -57,7 +59,7 @@ public class TaskServiceTests
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), string.Empty, string.Empty, TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskDTO(Guid.NewGuid(), string.Empty, string.Empty, TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
         var validationResult = new FluentValidation.Results.ValidationResult(new List<FluentValidation.Results.ValidationFailure>
         {
             new("Title", "Title cannot be empty"),
@@ -84,9 +86,9 @@ public class TaskServiceTests
 
         var dateTime = datetime.AddDays(1);
         var taskId = Guid.NewGuid();
-        var entity = new TaskItem("Test Task", "Description", dateTime, TaskItemStatus.Pending, null, _dateTimeProviderMock.Object);
+        var entity = new Domain.Entities.TaskEntity("Test Task", "Description", dateTime, TaskEntityStatus.Pending, null, _dateTimeProviderMock.Object);
         
-        _cacheServiceMock.Setup(cache => cache.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<TaskItem?>>>()))
+        _cacheServiceMock.Setup(cache => cache.GetOrSetAsync(It.IsAny<string>(), It.IsAny<Func<Task<TaskEntity?>>>()))
             .ReturnsAsync(entity);
 
         _taskRepositoryMock
@@ -107,7 +109,7 @@ public class TaskServiceTests
         var taskId = Guid.NewGuid();
         _taskRepositoryMock
             .Setup(repo => repo.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TaskItem?)null);
+            .ReturnsAsync((TaskEntity?)null);
 
         //Act
         var result = await _taskService.GetByIdAsync(taskId, CancellationToken.None);

@@ -1,5 +1,5 @@
-using Application.DTOs;
-using Application.Interfaces;
+using Application.Task.DTOs;
+using Application.Task.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Consts;
@@ -28,7 +28,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <response code="400">Bad Request</response>
     /// <response code="500">Internal server error</response>
     [HttpGet]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<TaskDTO>))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<TaskEntityDTO>))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// Get a task by id.
     /// </summary>
     /// <param name="nameof(id)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// GET task/id
@@ -61,7 +61,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskDTO))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskEntityDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -94,7 +94,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// Creates a task.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// POST task/
@@ -111,12 +111,12 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <response code="400">Bad Request</response>
     /// <response code="500">Internal server error</response>
     [HttpPost]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskDTO))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskEntityDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateTask(TaskDTO taskDTO,
-                                                [FromServices]IValidator<TaskDTO> createValidator,
+    public async Task<IActionResult> CreateTask(TaskEntityDTO taskDTO,
+                                                [FromServices]IValidator<TaskEntityDTO> createValidator,
                                                 CancellationToken cancellationToken)
     {
         try
@@ -150,7 +150,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// Updates a task.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// PUT task/
@@ -169,12 +169,12 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal server error</response>
     [HttpPut]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskDTO))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(TaskEntityDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateTask(TaskDTO taskDTO,
-                                                [FromServices]IValidator<TaskDTO> updateValidator,
+    public async Task<IActionResult> UpdateTask(TaskEntityDTO taskDTO,
+                                                [FromServices]IValidator<TaskEntityDTO> updateValidator,
                                                 CancellationToken cancellationToken)
     {
         try
@@ -250,7 +250,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// </summary>
     /// <param name="nameof(id)"></param>
     /// <param name="nameof(email)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// PATCH task/id/assign/email

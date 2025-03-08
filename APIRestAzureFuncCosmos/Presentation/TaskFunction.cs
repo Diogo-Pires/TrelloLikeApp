@@ -1,5 +1,5 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.Task.DTOs;
+using Application.Task.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,14 +23,14 @@ namespace Presentation;
 
 public class TaskFunction(ITaskService taskService,
                           IExceptionHandler exceptionHandler,
-                          IValidator<TaskDTO> createValidator,
-                          IValidator<TaskDTO> updateValidator)
+                          IValidator<TaskEntityDTO> createValidator,
+                          IValidator<TaskEntityDTO> updateValidator)
 {
     const string ROUTE_NAME = "tasks";
     private readonly ITaskService _taskService = taskService;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
-    private readonly IValidator<TaskDTO> _createValidator = createValidator;
-    private readonly IValidator<TaskDTO> _updateValidator = updateValidator;
+    private readonly IValidator<TaskEntityDTO> _createValidator = createValidator;
+    private readonly IValidator<TaskEntityDTO> _updateValidator = updateValidator;
 
     /// <summary>
     /// Get all tasks.
@@ -46,7 +46,7 @@ public class TaskFunction(ITaskService taskService,
     /// <response code="200">Ok</response>
     /// <response code="400">Bad Request</response>
     [OpenApiOperation(operationId: nameof(GetAllTasks), tags: [ROUTE_NAME])]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<TaskDTO>), Description = "Get all the tasks")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<TaskEntityDTO>), Description = "Get all the tasks")]
     [FunctionName(nameof(GetAllTasks))]
     public async Task<IActionResult> GetAllTasks(
         [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
@@ -71,7 +71,7 @@ public class TaskFunction(ITaskService taskService,
     /// Get a task by id.
     /// </summary>
     /// <param name="nameof(id)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// GET task/id
@@ -84,7 +84,7 @@ public class TaskFunction(ITaskService taskService,
     /// <response code="404">Not Found</response>
     [OpenApiOperation(operationId: nameof(GetTaskById), tags: [ROUTE_NAME])]
     [OpenApiParameter(name: nameof(id), In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "Task's id")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskDTO), Description = "Get a task by id")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskEntityDTO), Description = "Get a task by id")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: UtilityConsts.APPJSON, bodyType: typeof(ErrorResponse), Description = "Model for errors")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     [FunctionName(nameof(GetTaskById))]
@@ -122,7 +122,7 @@ public class TaskFunction(ITaskService taskService,
     /// Creates a task.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// POST task/
@@ -138,8 +138,8 @@ public class TaskFunction(ITaskService taskService,
     /// <response code="201">Created</response>
     /// <response code="400">Bad Request</response>
     [OpenApiOperation(operationId: nameof(CreateTask), tags: [ROUTE_NAME])]
-    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(TaskDTO), Description = "A new task")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskDTO), Description = "Creates a new task")]
+    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(TaskEntityDTO), Description = "A new task")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskEntityDTO), Description = "Creates a new task")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = "Provided task was wrongly formated")]
     [FunctionName(nameof(CreateTask))]
     public async Task<IActionResult> CreateTask(
@@ -149,7 +149,7 @@ public class TaskFunction(ITaskService taskService,
         try
         {
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
-            var createTaskDto = JsonConvert.DeserializeObject<TaskDTO>(requestBody);
+            var createTaskDto = JsonConvert.DeserializeObject<TaskEntityDTO>(requestBody);
 
             var validationResult = await _createValidator.ValidateAsync(createTaskDto, cancellationToken);
             if (!validationResult.IsValid)
@@ -184,7 +184,7 @@ public class TaskFunction(ITaskService taskService,
     /// Updates a task.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// PUT task/
@@ -202,8 +202,8 @@ public class TaskFunction(ITaskService taskService,
     /// <response code="400">Bad Request</response>
     /// <response code="404">Not Found</response>
     [OpenApiOperation(operationId: nameof(UpdateTask), tags: [ROUTE_NAME])]
-    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(TaskDTO), Description = "A task to be update")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskDTO), Description = "Updates a task")]
+    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(TaskEntityDTO), Description = "A task to be update")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskEntityDTO), Description = "Updates a task")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: UtilityConsts.APPJSON, bodyType: typeof(string), Description = "Provided task was wrongly formated")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     [FunctionName(nameof(UpdateTask))]
@@ -214,7 +214,7 @@ public class TaskFunction(ITaskService taskService,
         try
         {
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
-            var updateTaskDto = JsonConvert.DeserializeObject<TaskDTO>(requestBody);
+            var updateTaskDto = JsonConvert.DeserializeObject<TaskEntityDTO>(requestBody);
 
             var validationResult = await _updateValidator.ValidateAsync(updateTaskDto, cancellationToken);
             if (!validationResult.IsValid)
@@ -296,7 +296,7 @@ public class TaskFunction(ITaskService taskService,
     /// </summary>
     /// <param name="nameof(id)"></param>
     /// <param name="nameof(email)"></param>
-    /// <returns><see cref="TaskDTO"/></returns>
+    /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// PATCH task/id/assign/email
@@ -309,7 +309,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiOperation(operationId: nameof(AssignedUserToATask), tags: [ROUTE_NAME])]
     [OpenApiParameter(name: nameof(taskId), In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "The id of the task to be updated")]
     [OpenApiParameter(name: nameof(email), In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "The user's email to be assigned to the task")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskDTO), Description = "The updated task")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(TaskEntityDTO), Description = "The updated task")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: UtilityConsts.APPJSON, bodyType: typeof(string), Description = "Provided values contains errors")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "User was not found")]

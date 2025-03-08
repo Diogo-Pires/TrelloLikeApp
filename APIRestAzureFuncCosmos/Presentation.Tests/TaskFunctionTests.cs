@@ -1,8 +1,8 @@
 using System.Text;
-using Application.DTOs;
-using Application.Interfaces;
+using Application.Task.DTOs;
+using Application.Task.Interfaces;
 using Domain.Entities;
-using Domain.Enums;
+using Domain.Task.Enums;
 using FluentResults;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -17,16 +17,16 @@ public class TaskFunctionTests
 {
     private readonly Mock<ITaskService> _taskServiceMock;
     private readonly Mock<IExceptionHandler> _exceptionHandlerMock; 
-    private readonly Mock<IValidator<TaskDTO>> _createValidatorMock;
-    private readonly Mock<IValidator<TaskDTO>> _updateValidatorMock;
+    private readonly Mock<IValidator<TaskEntityDTO>> _createValidatorMock;
+    private readonly Mock<IValidator<TaskEntityDTO>> _updateValidatorMock;
     private readonly TaskFunction _taskFunction;
 
     public TaskFunctionTests()
     {
         _taskServiceMock = new Mock<ITaskService>();
         _exceptionHandlerMock = new Mock<IExceptionHandler>();
-        _createValidatorMock = new Mock<IValidator<TaskDTO>>();
-        _updateValidatorMock = new Mock<IValidator<TaskDTO>>();
+        _createValidatorMock = new Mock<IValidator<TaskEntityDTO>>();
+        _updateValidatorMock = new Mock<IValidator<TaskEntityDTO>>();
         _taskFunction = new TaskFunction(_taskServiceMock.Object,
                                          _exceptionHandlerMock.Object,
                                          _createValidatorMock.Object,
@@ -38,8 +38,8 @@ public class TaskFunctionTests
     {
         // Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
-        var tasks = new List<TaskDTO> { taskDto };
+        var taskDto = new TaskEntityDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
+        var tasks = new List<TaskEntityDTO> { taskDto };
         _taskServiceMock.Setup(s => s.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(tasks);
         var req = new Mock<HttpRequest>();
 
@@ -57,7 +57,7 @@ public class TaskFunctionTests
         // Arrange
         var dateTime = DateTime.UtcNow;
         var taskId = Guid.NewGuid();
-        var taskDto = new TaskDTO(taskId, "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskEntityDTO(taskId, "Test Task", "Test Description", TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
         _taskServiceMock
             .Setup(s => s.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(taskDto);
@@ -78,7 +78,7 @@ public class TaskFunctionTests
         var taskId = Guid.NewGuid();
         _taskServiceMock
             .Setup(s => s.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((TaskDTO?)null);
+            .ReturnsAsync((TaskEntityDTO?)null);
         var req = new Mock<HttpRequest>();
 
         // Act
@@ -93,11 +93,11 @@ public class TaskFunctionTests
     {
         // Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO("Test Task", "Test Description", TaskItemStatus.Pending, null, null);
+        var taskDto = new TaskEntityDTO("Test Task", "Test Description", TaskEntityStatus.Pending, null, null);
         var response = Result.Ok(taskDto);
 
         _taskServiceMock
-            .Setup(s => s.CreateAsync(It.IsAny<TaskDTO>(), It.IsAny<CancellationToken>()))
+            .Setup(s => s.CreateAsync(It.IsAny<TaskEntityDTO>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
 
         var req = new Mock<HttpRequest>();
@@ -116,10 +116,10 @@ public class TaskFunctionTests
     {
         // Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
-        var response = Result.Ok((TaskDTO?)taskDto);
+        var taskDto = new TaskEntityDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
+        var response = Result.Ok((TaskEntityDTO?)taskDto);
         _taskServiceMock
-            .Setup(s => s.UpdateAsync(It.IsAny<TaskDTO>(), It.IsAny<CancellationToken>()))
+            .Setup(s => s.UpdateAsync(It.IsAny<TaskEntityDTO>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
         var req = new Mock<HttpRequest>();
         var json = JsonConvert.SerializeObject(taskDto);

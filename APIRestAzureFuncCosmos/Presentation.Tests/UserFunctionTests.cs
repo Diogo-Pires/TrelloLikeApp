@@ -1,5 +1,5 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.User.DTOs;
+using Application.User.Interfaces;
 using FluentResults;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +15,7 @@ public class UserFunctionTests
 {
     private readonly Mock<IUserService> _mockUserService;
     private readonly Mock<IExceptionHandler> _mockExceptionHandler;
-    private readonly Mock<IValidator<UserDTO>> _createValidatorMock;
+    private readonly Mock<IValidator<UserEntityDTO>> _createValidatorMock;
     private readonly UserFunction _userFunction;
     private readonly CancellationToken _cancellationToken = CancellationToken.None;
 
@@ -23,7 +23,7 @@ public class UserFunctionTests
     {
         _mockUserService = new Mock<IUserService>();
         _mockExceptionHandler = new Mock<IExceptionHandler>();
-        _createValidatorMock = new Mock<IValidator<UserDTO>>();
+        _createValidatorMock = new Mock<IValidator<UserEntityDTO>>();
         _userFunction = new UserFunction(_mockUserService.Object,
                                          _createValidatorMock.Object,
                                          _mockExceptionHandler.Object);
@@ -33,7 +33,7 @@ public class UserFunctionTests
     public async Task GetAllUsers_ShouldReturnOk_WhenUsersExist()
     {
         //Arrange
-        var users = new List<UserDTO> { new("name", "test@example.com") };
+        var users = new List<UserEntityDTO> { new("name", "test@example.com") };
         _mockUserService.Setup(s => s.GetAllAsync(_cancellationToken)).ReturnsAsync(users);
 
         //Act
@@ -50,7 +50,7 @@ public class UserFunctionTests
     {
         //Arrange
         var email = "test@example.com";
-        var user = new UserDTO("name", "test@example.com");
+        var user = new UserEntityDTO("name", "test@example.com");
         _mockUserService.Setup(s => s.GetByEmailAsync(email, _cancellationToken)).ReturnsAsync(user);
 
         //Act
@@ -68,7 +68,7 @@ public class UserFunctionTests
         //Arrange
         _mockUserService
             .Setup(s => s.GetByEmailAsync(It.IsAny<string>(), _cancellationToken))
-            .ReturnsAsync((UserDTO?)null);
+            .ReturnsAsync((UserEntityDTO?)null);
 
         //Act
         var result = await _userFunction.GetUserByEmail(Mock.Of<HttpRequest>(), "notfound@example.com", _cancellationToken);
@@ -81,13 +81,13 @@ public class UserFunctionTests
     public async Task CreateUser_ShouldReturnCreated_WhenUserIsCreated()
     {
         //Arrange
-        var userDto = new UserDTO("name", "test@example.com");
+        var userDto = new UserEntityDTO("name", "test@example.com");
         var requestBody = JsonConvert.SerializeObject(userDto);
         var request = new DefaultHttpContext().Request;
         request.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
 
         var createdResult = Result.Ok(userDto);
-        _mockUserService.Setup(s => s.CreateAsync(It.IsAny<UserDTO>(), _cancellationToken)).ReturnsAsync(createdResult);
+        _mockUserService.Setup(s => s.CreateAsync(It.IsAny<UserEntityDTO>(), _cancellationToken)).ReturnsAsync(createdResult);
 
         //Act
         var result = await _userFunction.CreateUser(request, _cancellationToken);
@@ -101,13 +101,13 @@ public class UserFunctionTests
     public async Task CreateUser_ShouldReturnBadRequest_WhenUserCreationFails()
     {
         //Arrange
-        var userDto = new UserDTO("name", "invalid@example.com");
+        var userDto = new UserEntityDTO("name", "invalid@example.com");
         var requestBody = JsonConvert.SerializeObject(userDto);
         var request = new DefaultHttpContext().Request;
         request.Body = new MemoryStream(Encoding.UTF8.GetBytes(requestBody));
 
         var failedResult = Result.Fail("User creation failed");
-        _mockUserService.Setup(s => s.CreateAsync(It.IsAny<UserDTO>(), _cancellationToken)).ReturnsAsync(failedResult);
+        _mockUserService.Setup(s => s.CreateAsync(It.IsAny<UserEntityDTO>(), _cancellationToken)).ReturnsAsync(failedResult);
 
         //Act
         var result = await _userFunction.CreateUser(request, _cancellationToken);

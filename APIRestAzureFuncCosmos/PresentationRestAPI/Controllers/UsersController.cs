@@ -1,5 +1,5 @@
-using Application.DTOs;
-using Application.Interfaces;
+using Application.User.DTOs;
+using Application.User.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Consts;
@@ -28,7 +28,7 @@ public class UsersController(IUserService userService) : ControllerBase
     /// <response code="400">Bad Request</response>
     /// <response code="500">Internal server error</response>
     [HttpGet]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<UserDTO>))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<UserEntityDTO>))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public class UsersController(IUserService userService) : ControllerBase
     /// Get a user by email.
     /// </summary>
     /// <param name="nameof(email)"></param>
-    /// <returns><see cref="UserDTO"/></returns>
+    /// <returns><see cref="UserEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// GET user/email
@@ -61,7 +61,7 @@ public class UsersController(IUserService userService) : ControllerBase
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{{email}}")]
-    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(UserDTO))]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(UserEntityDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
@@ -94,7 +94,7 @@ public class UsersController(IUserService userService) : ControllerBase
     /// Creates an user.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="UserDTO"/></returns>
+    /// <returns><see cref="UserEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// POST user/
@@ -112,8 +112,8 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateUser(UserDTO userDTO,
-                                                [FromServices] IValidator<UserDTO> createValidator,
+    public async Task<IActionResult> CreateUser(UserEntityDTO userDTO,
+                                                [FromServices] IValidator<UserEntityDTO> createValidator,
                                                 CancellationToken cancellationToken)
     {
         try

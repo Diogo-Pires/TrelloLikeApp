@@ -1,9 +1,11 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
-using Application.Mappers;
-using Application.Services;
+﻿using Application.Cache.Interfaces;
+using Application.DTOs;
+using Application.Task.Mappers;
+using Application.Task.Services;
 using Domain.Entities;
-using Domain.Enums;
+using Domain.Task.Enums;
+using Domain.Task.Interfaces;
+using Domain.User.Interfaces;
 using FluentValidation;
 using Moq;
 using Shared.Interfaces;
@@ -38,11 +40,11 @@ public class BaseHybridCacheServiceTest
     {
         //Arrange
         var dateTime = DateTime.UtcNow;
-        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskDTO(Guid.NewGuid(), "Test Task", "Test Description", TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
         var taskEntity = TaskMapper.ToEntity(taskDto, _dateTimeProviderMock.Object);
 
         _taskRepositoryMock
-            .Setup(repo => repo.AddAsync(It.IsAny<TaskItem>(), It.IsAny<CancellationToken>()))
+            .Setup(repo => repo.AddAsync(It.IsAny<TaskEntity>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(taskEntity);
 
         //Act

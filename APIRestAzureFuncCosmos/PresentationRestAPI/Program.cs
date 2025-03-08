@@ -1,12 +1,9 @@
-using Application.Interfaces;
-using Application.Services;
 using PresentationRestAPI.Exceptions;
 using Shared.Interfaces;
 using Shared;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using Shared.Consts;
-using Infrastructure.Persistence;
 using Infrastructure.Cache;
 using Microsoft.Azure.Cosmos;
 using Infrastructure.Config;
@@ -15,6 +12,15 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using System.Text.Json.Serialization;
 using PresentationRestAPI.Validators;
+using Application.User.Services;
+using Application.User.Interfaces;
+using Infrastructure.User;
+using Infrastructure.Cache.Interfaces;
+using Domain.User.Interfaces;
+using Domain.Task.Interfaces;
+using Application.Task.Interfaces;
+using Application.Task.Services;
+using Infrastructure.Task;
 
 var builder = WebApplication.CreateBuilder(args);
 

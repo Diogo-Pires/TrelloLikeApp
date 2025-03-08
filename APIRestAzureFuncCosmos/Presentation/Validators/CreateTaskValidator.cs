@@ -1,11 +1,11 @@
-﻿using Application.DTOs;
+﻿using Application.Task.DTOs;
 using FluentValidation;
 using Shared.Consts;
 using Shared.Interfaces;
 
 namespace Presentation.Validators;
 
-public class CreateTaskValidator : AbstractValidator<TaskDTO>
+public class CreateTaskValidator : AbstractValidator<TaskEntityDTO>
 {
     public CreateTaskValidator(IDateTimeProvider dateTimeProvider)
     {

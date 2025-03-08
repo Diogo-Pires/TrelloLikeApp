@@ -1,17 +1,16 @@
-using Domain.Enums;
 using Shared.Exceptions;
-using Domain.Entities;
 using Moq;
 using Shared.Interfaces;
 using Shared.Consts;
+using Domain.Task.Enums;
 
 namespace Domain.Tests.Entities;
 
-public class TaskItemTests
+public class TaskEntityTests
 {
     private readonly Mock<IDateTimeProvider> _dateTimeMockService;
 
-    public TaskItemTests()
+    public TaskEntityTests()
     {
         _dateTimeMockService = new Mock<IDateTimeProvider>();
     }
@@ -29,13 +28,13 @@ public class TaskItemTests
         var deadline = DateTime.UtcNow.AddDays(1);
 
         // Act
-        var task = new TaskItem(title, description, deadline, null, null, _dateTimeMockService.Object);
+        var task = new TaskEntity(title, description, deadline, null, null, _dateTimeMockService.Object);
 
         // Assert
         Assert.NotEqual(Guid.Empty, task.Id);
         Assert.Equal(title, task.Title);
         Assert.Equal(description, task.Description);
-        Assert.Equal(TaskItemStatus.Pending, task.Status);
+        Assert.Equal(TaskEntityStatus.Pending, task.Status);
         Assert.Null(task.AssignedUser);
     }
 
@@ -49,7 +48,7 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(null,
+            TaskEntity.ValidateCreation(null,
                                       string.Empty,
                                       "Valid Description",
                                       DateTime.UtcNow.AddDays(1),
@@ -72,7 +71,7 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(null,
+            TaskEntity.ValidateCreation(null,
                                       longTitle,
                                       "Valid Description",
                                       DateTime.UtcNow.AddDays(1),
@@ -95,7 +94,7 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(null, 
+            TaskEntity.ValidateCreation(null, 
                                       "Valid Title",
                                       "Valid Description",
                                       datetime.AddDays(1),
@@ -117,7 +116,7 @@ public class TaskItemTests
 
         // Act & Assert
         var exception = Assert.Throws<DomainException>(() =>
-            TaskItem.ValidateCreation(null,
+            TaskEntity.ValidateCreation(null,
                                       "Valid Title",
                                       "Valid Description",
                                       datetime,
@@ -137,7 +136,7 @@ public class TaskItemTests
             .Setup(m => m.GetUTCNow())
             .Returns(new DateTime(2025, 1, 1));
 
-        var task = new TaskItem("Title",
+        var task = new TaskEntity("Title",
                                 "Description",
                                 DateTime.UtcNow.AddDays(1),
                                 null,
@@ -149,13 +148,13 @@ public class TaskItemTests
         var newDeadline = DateTime.UtcNow.AddDays(2);
 
         // Act
-        task.UpdateTask(newTitle, newDescription, newDeadline, TaskItemStatus.InProgress);
+        task.UpdateTask(newTitle, newDescription, newDeadline, TaskEntityStatus.InProgress);
 
         // Assert
         Assert.Equal(newTitle, task.Title);
         Assert.Equal(newDescription, task.Description);
         Assert.Equal(newDeadline, task.Deadline);
-        Assert.Equal(TaskItemStatus.InProgress, task.Status);
+        Assert.Equal(TaskEntityStatus.InProgress, task.Status);
     }
 
     [Fact]
@@ -166,18 +165,18 @@ public class TaskItemTests
             .Setup(m => m.GetUTCNow())
             .Returns(new DateTime(2025, 1, 1));
 
-        var task = new TaskItem("Task",
+        var task = new TaskEntity("Task",
                                 "Description",
                                 DateTime.UtcNow.AddDays(1),
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
         // Act
-        task.ChangeStatus(TaskItemStatus.InProgress);
+        task.ChangeStatus(TaskEntityStatus.InProgress);
 
         // Assert
-        Assert.Equal(TaskItemStatus.InProgress, task.Status);
+        Assert.Equal(TaskEntityStatus.InProgress, task.Status);
     }
 
     [Fact]
@@ -188,7 +187,7 @@ public class TaskItemTests
             .Setup(m => m.GetUTCNow())
             .Returns(new DateTime(2025, 1, 1));
 
-        var task = new TaskItem("Task",
+        var task = new TaskEntity("Task",
                                 "Description",
                                 DateTime.UtcNow.AddDays(1),
                                 null,

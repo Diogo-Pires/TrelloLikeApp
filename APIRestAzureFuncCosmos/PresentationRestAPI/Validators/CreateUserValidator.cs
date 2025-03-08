@@ -1,10 +1,10 @@
-﻿using Application.DTOs;
+﻿using Application.User.DTOs;
 using FluentValidation;
 using Shared.Consts;
 
 namespace PresentationRestAPI.Validators;
 
-public class CreateUserValidator : AbstractValidator<UserDTO>
+public class CreateUserValidator : AbstractValidator<UserEntityDTO>
 {
     public CreateUserValidator()
     {
