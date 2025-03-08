@@ -1,12 +1,13 @@
 ﻿using Application.User.DTOs;
 using FluentValidation;
+using PresentationRestAPI.User.Interfaces;
 using Shared.Consts;
 
-namespace PresentationRestAPI.Validators;
+namespace PresentationRestAPI.User.Validators;
 
-public class CreateUserValidator : AbstractValidator<UserEntityDTO>
+public class UserCreateValidator : AbstractValidator<UserEntityDTO>, IUserCreatorValidator
 {
-    public CreateUserValidator()
+    public UserCreateValidator()
     {
         RuleFor(x => x)
             .NotNull()
@@ -21,6 +22,5 @@ public class CreateUserValidator : AbstractValidator<UserEntityDTO>
             .WithMessage(Constants.VALIDATION_USER_EMAIL_NOT_VALID)
             .NotEmpty()
             .WithMessage(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY);
-
     }
 }

@@ -2,9 +2,10 @@ using Application.User.DTOs;
 using Application.User.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using PresentationRestAPI.User.Interfaces;
 using Shared.Consts;
 
-namespace PresentationRestAPI.Controllers;
+namespace PresentationRestAPI.User;
 
 [ApiController]
 [Produces(UtilityConsts.APPJSON)]
@@ -60,7 +61,7 @@ public class UsersController(IUserService userService) : ControllerBase
     /// <response code="400">Bad Request</response>
     /// <response code="404">Not Found</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet("{{email}}")]
+    [HttpGet("{email}")]
     [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(UserEntityDTO))]
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
@@ -113,7 +114,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUser(UserEntityDTO userDTO,
-                                                [FromServices] IValidator<UserEntityDTO> createValidator,
+                                                [FromServices]IUserCreatorValidator createValidator,
                                                 CancellationToken cancellationToken)
     {
         try

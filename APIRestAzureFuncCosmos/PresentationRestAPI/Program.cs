@@ -11,7 +11,6 @@ using FluentValidation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using System.Text.Json.Serialization;
-using PresentationRestAPI.Validators;
 using Application.User.Services;
 using Application.User.Interfaces;
 using Infrastructure.User;
@@ -21,6 +20,10 @@ using Domain.Task.Interfaces;
 using Application.Task.Interfaces;
 using Application.Task.Services;
 using Infrastructure.Task;
+using PresentationRestAPI.Task.Validators;
+using PresentationRestAPI.User.Validators;
+using PresentationRestAPI.Task.Interfaces;
+using PresentationRestAPI.User.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,18 +76,18 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = UtilityConsts.APP_NAME;
 });
 
+builder.Services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddSingleton<IHybridCacheService, HybridCacheService>();
 builder.Services.AddSingleton(x => new CosmosClient(cosmosSettings.Endpoint, cosmosSettings.Key));
 builder.Services.AddSingleton(x => cosmosSettings);
-builder.Services.AddTransient<IDateTimeProvider, DateTimeProvider>();
+builder.Services.AddScoped<ITaskCreateValidator, TaskCreateValidator>();
+builder.Services.AddScoped<ITaskUpdateValidator, TaskUpdateValidator>();
+builder.Services.AddScoped<IUserCreatorValidator, UserCreateValidator>();
 builder.Services.AddTransient<ITaskRepository, TaskRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<ITaskService, TaskService>();
 builder.Services.AddTransient<IUserService, UserService>();
 
-builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
 
 var app = builder.Build();
 

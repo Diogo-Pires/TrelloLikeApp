@@ -2,9 +2,10 @@ using Application.Task.DTOs;
 using Application.Task.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using PresentationRestAPI.Task.Interfaces;
 using Shared.Consts;
 
-namespace PresentationRestAPI.Controllers;
+namespace PresentationRestAPI.Task;
 
 [ApiController]
 [Produces(UtilityConsts.APPJSON)]
@@ -16,7 +17,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <summary>
     /// Get all tasks.
     /// </summary>
-    /// <returns><see cref="List<TaskDTO>"/></returns>
+    /// <returns><see cref="List<TaskEntityDTO>"/></returns>
     /// <remarks>
     /// Usage Example:
     /// GET tasks
@@ -116,7 +117,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateTask(TaskEntityDTO taskDTO,
-                                                [FromServices]IValidator<TaskEntityDTO> createValidator,
+                                                [FromServices]ITaskCreateValidator createValidator,
                                                 CancellationToken cancellationToken)
     {
         try
@@ -174,7 +175,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateTask(TaskEntityDTO taskDTO,
-                                                [FromServices]IValidator<TaskEntityDTO> updateValidator,
+                                                [FromServices]ITaskUpdateValidator updateValidator,
                                                 CancellationToken cancellationToken)
     {
         try
