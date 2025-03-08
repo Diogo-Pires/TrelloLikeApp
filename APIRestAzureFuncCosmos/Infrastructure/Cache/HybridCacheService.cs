@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.Distributed;
-using Application.Interfaces;
 using Newtonsoft.Json;
+using Infrastructure.Cache.Interfaces;
 
 namespace Infrastructure.Cache;
 
@@ -45,7 +45,7 @@ public class HybridCacheService(IMemoryCache memoryCache, IDistributedCache dist
         return cachedValue;
     }
 
-    public async Task RemoveAsync(string key)
+    public async System.Threading.Tasks.Task RemoveAsync(string key)
     {
         _memoryCache.Remove(key);
         await _distributedCache.RemoveAsync(key);

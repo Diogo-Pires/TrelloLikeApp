@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
-using Application.Mappers;
+using Application.Task.Mappers;
 using Domain.Entities;
-using Domain.Enums;
+using Domain.Task.Enums;
 using Moq;
 using Shared.Interfaces;
 
@@ -16,7 +16,7 @@ public class TaskMapperTests
         var dateTime = DateTime.UtcNow;
         var title = "Test Task";
         var description = "Test Description";
-        var taskDto = new TaskDTO(Guid.NewGuid(), title, description, TaskItemStatus.Pending, dateTime, dateTime, dateTime, null);
+        var taskDto = new TaskDTO(Guid.NewGuid(), title, description, TaskEntityStatus.Pending, dateTime, dateTime, dateTime, null);
         var dateTimeProviderMock = new Mock<IDateTimeProvider>();
 
         //Act
@@ -33,7 +33,7 @@ public class TaskMapperTests
         //Arrange
         var _dateTimeProviderMock = new Mock<IDateTimeProvider>();
         var dateTime = DateTime.UtcNow;
-        var entity = new TaskItem("Test Task", "Description", dateTime, TaskItemStatus.Pending, null, _dateTimeProviderMock.Object);
+        var entity = new Domain.Entities.TaskEntity("Test Task", "Description", dateTime, TaskEntityStatus.Pending, null, _dateTimeProviderMock.Object);
 
         //Act
         var dto = TaskMapper.ToDTO(entity);

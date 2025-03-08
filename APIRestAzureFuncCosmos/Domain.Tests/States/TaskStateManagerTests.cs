@@ -1,8 +1,8 @@
-﻿using Domain.Consts;
-using Domain.Entities;
-using Domain.Enums;
-using Domain.States;
+﻿using Domain.Entities;
+using Domain.Task.Enums;
+using Domain.Task.States;
 using Moq;
+using Shared.Consts;
 using Shared.Exceptions;
 using Shared.Interfaces;
 
@@ -18,11 +18,11 @@ public class TaskStateManagerTests
     }
 
     [Theory]
-    [InlineData(TaskItemStatus.Pending, typeof(PendingState))]
-    [InlineData(TaskItemStatus.InProgress, typeof(InProgressState))]
-    [InlineData(TaskItemStatus.Completed, typeof(CompletedState))]
-    [InlineData(TaskItemStatus.Cancelled, typeof(CancelledState))]
-    public void GetState_ShouldReturnCorrectState(TaskItemStatus status, Type expectedType)
+    [InlineData(TaskEntityStatus.Pending, typeof(PendingState))]
+    [InlineData(TaskEntityStatus.InProgress, typeof(InProgressState))]
+    [InlineData(TaskEntityStatus.Completed, typeof(CompletedState))]
+    [InlineData(TaskEntityStatus.Cancelled, typeof(CancelledState))]
+    public void GetState_ShouldReturnCorrectState(TaskEntityStatus status, Type expectedType)
     {
         // Act
         var state = TaskStateManager.GetState(status);
@@ -35,7 +35,7 @@ public class TaskStateManagerTests
     public void GetState_ShouldThrowExceptionForInvalidStatus()
     {
         // Arrange
-        var invalidStatus = (TaskItemStatus)999;
+        var invalidStatus = (TaskEntityStatus)999;
 
         // Act & Assert
         Assert.Throws<DomainException>(() => TaskStateManager.GetState(invalidStatus));
@@ -46,10 +46,10 @@ public class TaskStateManagerTests
     {
         // Arrange
         var currentState = new PendingState();
-        var invalidStatus = TaskItemStatus.Completed;
+        var invalidStatus = TaskEntityStatus.Completed;
 
         // Act & Assert
-        Assert.Throws<DomainException>(() => TaskStateManager.ValidateStatusTransition(invalidStatus, currentState, TaskItemStatus.Pending));
+        Assert.Throws<DomainException>(() => TaskStateManager.ValidateStatusTransition(invalidStatus, currentState, TaskEntityStatus.Pending));
     }
 
     [Fact]
@@ -57,10 +57,10 @@ public class TaskStateManagerTests
     {
         // Arrange
         var currentState = new InProgressState();
-        var validStatus = TaskItemStatus.Completed;
+        var validStatus = TaskEntityStatus.Completed;
 
         // Act & Assert
-        var exception = Record.Exception(() => TaskStateManager.ValidateStatusTransition(validStatus, currentState, TaskItemStatus.InProgress));
+        var exception = Record.Exception(() => TaskStateManager.ValidateStatusTransition(validStatus, currentState, TaskEntityStatus.InProgress));
         Assert.Null(exception);
     }
 
@@ -72,13 +72,13 @@ public class TaskStateManagerTests
             .Setup(m => m.GetUTCNow())
             .Returns(new DateTime(2025, 1, 1));
 
-        var task = new TaskItem("Test",
+        var task = new TaskEntity("Test",
                                 "Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
-        var invalidStatus = TaskItemStatus.Completed;
+        var invalidStatus = TaskEntityStatus.Completed;
 
         // Act & Assert
         Assert.Throws<DomainException>(() => TaskStateManager.ApplyStateTransition(task, invalidStatus, task.State, task.Status));
@@ -92,13 +92,13 @@ public class TaskStateManagerTests
             .Setup(m => m.GetUTCNow())
             .Returns(new DateTime(2025, 1, 1));
 
-        var task = new TaskItem("Test",
+        var task = new TaskEntity("Test",
                                 "Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
-        var newStatus = TaskItemStatus.InProgress;
+        var newStatus = TaskEntityStatus.InProgress;
 
         // Act
         TaskStateManager.ApplyStateTransition(task, newStatus, task.State, task.Status);
@@ -108,10 +108,10 @@ public class TaskStateManagerTests
     }
 
     [Theory]
-    [InlineData(TaskItemStatus.InProgress, true)]
-    [InlineData(TaskItemStatus.Cancelled, true)]
-    [InlineData(TaskItemStatus.Completed, false)]
-    public void PendingCanTransitionTo_ShouldReturnCorrectResult(TaskItemStatus newStatus, bool expectedResult)
+    [InlineData(TaskEntityStatus.InProgress, true)]
+    [InlineData(TaskEntityStatus.Cancelled, true)]
+    [InlineData(TaskEntityStatus.Completed, false)]
+    public void PendingCanTransitionTo_ShouldReturnCorrectResult(TaskEntityStatus newStatus, bool expectedResult)
     {
         // Arrange
         _dateTimeMockService
@@ -119,10 +119,10 @@ public class TaskStateManagerTests
             .Returns(new DateTime(2025, 1, 1));
 
         var state = new PendingState();
-        var task = new TaskItem("Test Task",
+        var task = new TaskEntity("Test Task",
                                 "Test Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
@@ -134,10 +134,10 @@ public class TaskStateManagerTests
     }
 
     [Theory]
-    [InlineData(TaskItemStatus.Pending, false)]
-    [InlineData(TaskItemStatus.Cancelled, true)]
-    [InlineData(TaskItemStatus.Completed, true)]
-    public void InProgressCanTransitionTo_ShouldReturnCorrectResult(TaskItemStatus newStatus, bool expectedResult)
+    [InlineData(TaskEntityStatus.Pending, false)]
+    [InlineData(TaskEntityStatus.Cancelled, true)]
+    [InlineData(TaskEntityStatus.Completed, true)]
+    public void InProgressCanTransitionTo_ShouldReturnCorrectResult(TaskEntityStatus newStatus, bool expectedResult)
     {
         // Arrange
         _dateTimeMockService
@@ -145,10 +145,10 @@ public class TaskStateManagerTests
             .Returns(new DateTime(2025, 1, 1));
 
         var state = new InProgressState();
-        var task = new TaskItem("Test Task",
+        var task = new TaskEntity("Test Task",
                                 "Test Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
@@ -168,10 +168,10 @@ public class TaskStateManagerTests
             .Returns(new DateTime(2025, 1, 1));
 
         var state = new PendingState();
-        var task = new TaskItem("Test Task",
+        var task = new TaskEntity("Test Task",
                                 "Test Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
@@ -179,7 +179,7 @@ public class TaskStateManagerTests
         state.Start(task);
 
         // Assert
-        Assert.Equal(TaskItemStatus.InProgress, task.Status);
+        Assert.Equal(TaskEntityStatus.InProgress, task.Status);
     }
 
     [Fact]
@@ -191,10 +191,10 @@ public class TaskStateManagerTests
             .Returns(new DateTime(2025, 1, 1));
 
         var state = new PendingState();
-        var task = new TaskItem("Test Task",
+        var task = new TaskEntity("Test Task",
                                 "Test Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
@@ -212,10 +212,10 @@ public class TaskStateManagerTests
             .Returns(new DateTime(2025, 1, 1));
 
         var state = new PendingState();
-        var task = new TaskItem("Test Task",
+        var task = new TaskEntity("Test Task",
                                 "Test Description",
                                 null,
-                                TaskItemStatus.Pending,
+                                TaskEntityStatus.Pending,
                                 null,
                                 _dateTimeMockService.Object);
 
@@ -223,7 +223,7 @@ public class TaskStateManagerTests
         state.Cancel(task);
 
         // Assert
-        Assert.Equal(TaskItemStatus.Cancelled, task.Status);
+        Assert.Equal(TaskEntityStatus.Cancelled, task.Status);
     }
 }
 

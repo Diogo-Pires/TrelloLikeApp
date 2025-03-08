@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using Infrastructure.Config;
-using Infrastructure.Persistence;
+using Infrastructure.User;
 using Microsoft.Azure.Cosmos;
 using Moq;
 
@@ -37,8 +37,8 @@ public class UserRepositoryTests
         var user = new Domain.Entities.User("test@example.com", "Test User");
 
         _containerMock
-            .Setup(c => c.ReadItemAsync<Domain.Entities.User>(user.Id, new PartitionKey(user.Id), null, default))
-            .ReturnsAsync(Mock.Of<ItemResponse<Domain.Entities.User>>(r => r.Resource == user));
+            .Setup(c => c.ReadItemAsync<Domain.User.UserEntity>(user.Id, new PartitionKey(user.Id), null, default))
+            .ReturnsAsync(Mock.Of<ItemResponse<Domain.User.UserEntity>>(r => r.Resource == user));
 
         // Act
         var result = await _userRepository.GetByEmailAsync(user.Id, CancellationToken.None);
@@ -53,7 +53,7 @@ public class UserRepositoryTests
     {
         // Arrange
         _containerMock
-            .Setup(c => c.ReadItemAsync<Domain.Entities.User>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .Setup(c => c.ReadItemAsync<Domain.User.UserEntity>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
             .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "", 0));
 
         // Act
@@ -71,7 +71,7 @@ public class UserRepositoryTests
 
         _containerMock
             .Setup(c => c.CreateItemAsync(user, new PartitionKey(user.Id), null, default))
-            .ReturnsAsync(Mock.Of<ItemResponse<Domain.Entities.User>>(r => r.Resource == user));
+            .ReturnsAsync(Mock.Of<ItemResponse<Domain.User.UserEntity>>(r => r.Resource == user));
 
         // Act
         var result = await _userRepository.AddAsync(user, CancellationToken.None);

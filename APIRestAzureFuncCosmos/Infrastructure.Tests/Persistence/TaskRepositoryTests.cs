@@ -1,7 +1,7 @@
-﻿using Domain.Entities;
-using Domain.Enums;
+﻿using Domain.Task.Enums;
+using Domain.TaskEntity;
 using Infrastructure.Config;
-using Infrastructure.Persistence;
+using Infrastructure.Task;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Moq;
@@ -41,11 +41,11 @@ public class TaskRepositoryTests
             .Returns(datetime);
 
         var taskId = Guid.NewGuid().ToString();
-        var task = new TaskItem("Test Task", "Description", datetime.AddDays(1), TaskItemStatus.Pending, null, dateTimeProviderMock.Object);
+        var task = new TaskEntity("Test Task", "Description", datetime.AddDays(1), TaskEntityStatus.Pending, null, dateTimeProviderMock.Object);
 
         _containerMock
-            .Setup(c => c.ReadItemAsync<TaskItem>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Mock.Of<ItemResponse<TaskItem>>(r => r.Resource == task));
+            .Setup(c => c.ReadItemAsync<TaskEntity>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<ItemResponse<TaskEntity>>(r => r.Resource == task));
 
         var result = await _taskRepository.GetByIdAsync(Guid.Parse(taskId), CancellationToken.None);
 
@@ -60,7 +60,7 @@ public class TaskRepositoryTests
         var taskId = Guid.NewGuid().ToString();
 
         _containerMock
-            .Setup(c => c.ReadItemAsync<TaskItem>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.ReadItemAsync<TaskEntity>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, string.Empty, 0));
 
         //Act
@@ -77,8 +77,8 @@ public class TaskRepositoryTests
         var taskId = Guid.NewGuid().ToString();
 
         _containerMock
-            .Setup(c => c.DeleteItemAsync<TaskItem>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Mock.Of<ItemResponse<TaskItem>>(r => r.StatusCode == HttpStatusCode.NoContent));
+            .Setup(c => c.DeleteItemAsync<TaskEntity>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Mock.Of<ItemResponse<TaskEntity>>(r => r.StatusCode == HttpStatusCode.NoContent));
 
         //Act
         var result = await _taskRepository.DeleteByIdAsync(Guid.Parse(taskId), CancellationToken.None);
@@ -94,7 +94,7 @@ public class TaskRepositoryTests
         var taskId = Guid.NewGuid().ToString();
 
         _containerMock
-            .Setup(c => c.DeleteItemAsync<TaskItem>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
+            .Setup(c => c.DeleteItemAsync<TaskEntity>(taskId, new PartitionKey(taskId), null, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, string.Empty, 0));
 
         //Act
@@ -114,11 +114,11 @@ public class TaskRepositoryTests
             .Setup(m => m.GetUTCNow())
             .Returns(datetime);
 
-        var task = new TaskItem("Test Task", "Description", datetime.AddDays(1), TaskItemStatus.Pending, null, dateTimeProviderMock.Object);
+        var task = new TaskEntity("Test Task", "Description", datetime.AddDays(1), TaskEntityStatus.Pending, null, dateTimeProviderMock.Object);
 
         _containerMock
             .Setup(c => c.CreateItemAsync(task, new PartitionKey(task.Id.ToString()), null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Mock.Of<ItemResponse<TaskItem>>(r => r.Resource == task));
+            .ReturnsAsync(Mock.Of<ItemResponse<TaskEntity>>(r => r.Resource == task));
 
         //Act
         var result = await _taskRepository.AddAsync(task, CancellationToken.None);
@@ -138,11 +138,11 @@ public class TaskRepositoryTests
             .Setup(m => m.GetUTCNow())
             .Returns(datetime);
 
-        var task = new TaskItem("Test Task", "Description", datetime.AddDays(1), TaskItemStatus.Pending, null, dateTimeProviderMock.Object);
+        var task = new TaskEntity("Test Task", "Description", datetime.AddDays(1), TaskEntityStatus.Pending, null, dateTimeProviderMock.Object);
 
         _containerMock
             .Setup(c => c.UpsertItemAsync(task, new PartitionKey(task.Id.ToString()), null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Mock.Of<ItemResponse<TaskItem>>(r => r.StatusCode == HttpStatusCode.OK));
+            .ReturnsAsync(Mock.Of<ItemResponse<TaskEntity>>(r => r.StatusCode == HttpStatusCode.OK));
 
         //Act
         var result = await _taskRepository.UpdateAsync(task, CancellationToken.None);

@@ -1,5 +1,6 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.User.DTOs;
+using Application.User.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -20,10 +21,13 @@ using System.Threading.Tasks;
 
 namespace Presentation;
 
-public class UserFunction(IUserService userService, IExceptionHandler exceptionHandler)
+public class UserFunction(IUserService userService,
+                          IValidator<UserEntityDTO> createValidator, 
+                          IExceptionHandler exceptionHandler)
 {
-    const string ROUTE_NAME = "user";
+    const string ROUTE_NAME = "users";
     private readonly IUserService _userService = userService;
+    private readonly IValidator<UserEntityDTO> _createValidator = createValidator;
     private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
 
     /// <summary>
@@ -40,10 +44,10 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     /// <response code="200">Ok</response>
     /// <response code="400">Bad Request</response>
     [OpenApiOperation(operationId: nameof(GetAllUsers), tags: [ROUTE_NAME])]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<UserDTO>), Description = "Get all the users")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<UserEntityDTO>), Description = "Get all the users")]
     [FunctionName(nameof(GetAllUsers))]
     public async Task<IActionResult> GetAllUsers(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}s")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -65,7 +69,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     /// Get a user by email.
     /// </summary>
     /// <param name="nameof(email)"></param>
-    /// <returns><see cref="UserDTO"/></returns>
+    /// <returns><see cref="UserEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// GET user/email
@@ -78,7 +82,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     /// <response code="404">Not Found</response>
     [OpenApiOperation(operationId: nameof(GetUserByEmail), tags: [ROUTE_NAME])]
     [OpenApiParameter(name: nameof(email), In = ParameterLocation.Path, Required = true, Type = typeof(Guid), Description = "User's email")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(UserDTO), Description = "Get a user by email")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(UserEntityDTO), Description = "Get a user by email")]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: UtilityConsts.APPJSON, bodyType: typeof(ErrorResponse), Description = "Model for errors")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "User was not found")]
     [FunctionName(nameof(GetUserByEmail))]
@@ -91,7 +95,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -116,7 +120,7 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     /// Creates an user.
     /// </summary>
     /// <param name="nameof(req)"></param>
-    /// <returns><see cref="UserDTO"/></returns>
+    /// <returns><see cref="UserEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
     /// POST user/
@@ -131,8 +135,8 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
     /// <response code="201">Created</response>
     /// <response code="400">Bad Request</response>
     [OpenApiOperation(operationId: nameof(CreateUser), tags: [ROUTE_NAME])]
-    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(UserDTO), Description = "A new user")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: UtilityConsts.APPJSON, bodyType: typeof(UserDTO), Description = "Creates a new user")]
+    [OpenApiParameter(name: nameof(req), In = ParameterLocation.Path, Required = true, Type = typeof(UserEntityDTO), Description = "A new user")]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: UtilityConsts.APPJSON, bodyType: typeof(UserEntityDTO), Description = "Creates a new user")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = "Provided user was wrongly formated")]
     [FunctionName(nameof(CreateUser))]
     public async Task<IActionResult> CreateUser(
@@ -142,11 +146,12 @@ public class UserFunction(IUserService userService, IExceptionHandler exceptionH
         try
         {
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
-            var createUserDto = JsonConvert.DeserializeObject<UserDTO>(requestBody);
+            var createUserDto = JsonConvert.DeserializeObject<UserEntityDTO>(requestBody);
 
-            if (createUserDto == null)
+            var validationResult = await _createValidator.ValidateAsync(createUserDto, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new { Error = UtilityConsts.VALIDATION_INVALID_JSON_REQUEST });
+                return new BadRequestObjectResult(validationResult.Errors);
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);

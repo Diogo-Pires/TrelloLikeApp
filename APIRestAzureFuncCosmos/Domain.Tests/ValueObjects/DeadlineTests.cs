@@ -1,6 +1,6 @@
-﻿using Domain.Consts;
-using Domain.ValueObjects;
+﻿using Domain.ValueObjects;
 using Moq;
+using Shared.Consts;
 using Shared.Exceptions;
 using Shared.Interfaces;
 
