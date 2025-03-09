@@ -1,6 +1,7 @@
 using Application.User.DTOs;
 using Application.User.Interfaces;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.User.Interfaces;
 using Shared.Consts;

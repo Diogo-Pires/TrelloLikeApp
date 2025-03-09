@@ -1,4 +1,4 @@
-using PresentationRestAPI.Exceptions;
+﻿using PresentationRestAPI.Exceptions;
 using Shared.Interfaces;
 using Shared;
 using OpenTelemetry.Logs;
@@ -24,6 +24,9 @@ using PresentationRestAPI.Task.Validators;
 using PresentationRestAPI.User.Validators;
 using PresentationRestAPI.Task.Interfaces;
 using PresentationRestAPI.User.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +35,73 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddMemoryCache(); 
+builder.Services.AddMemoryCache();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:7223", "https://localhost:7223")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
+});
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.Authority = "https://accounts.google.com";
+        options.MetadataAddress = "https://accounts.google.com/.well-known/openid-configuration";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "https://accounts.google.com",
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Google:ClientId"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = false // 🔹 Valida as chaves do Google
+        };
+    });
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//    options.Authority = "https://accounts.google.com";
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidIssuer = "https://accounts.google.com",
+//        ValidateAudience = true,
+//        ValidAudience = builder.Configuration["Google:ClientId"],
+//        ValidateLifetime = true
+//    };
+//});
+
+var d = builder.Configuration["Google:ClientId"];
+
+
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidateLifetime = true,
+//        ValidateIssuerSigningKey = true,
+//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//        ValidAudience = builder.Configuration["Jwt:Audience"],
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+//    };
+//})
+//.AddGoogle(options =>
+//{
+//    options.ClientId = builder.Configuration["Google:ClientId"];
+//    options.ClientSecret = builder.Configuration["Google:Secret"];
+//});
+
+builder.Services.AddAuthorization();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -91,6 +160,10 @@ builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -100,6 +173,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
-app.UseAuthorization();
 app.MapControllers();
 app.Run();
