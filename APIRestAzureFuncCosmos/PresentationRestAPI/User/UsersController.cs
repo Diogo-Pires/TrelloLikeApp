@@ -1,7 +1,6 @@
 using Application.User.DTOs;
 using Application.User.Interfaces;
-using FluentValidation;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.User.Interfaces;
 using Shared.Consts;
@@ -9,6 +8,7 @@ using Shared.Consts;
 namespace PresentationRestAPI.User;
 
 [ApiController]
+[Authorize]
 [Produces(UtilityConsts.APPJSON)]
 [Route("[controller]")]
 public class UsersController(IUserService userService) : ControllerBase

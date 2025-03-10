@@ -7,7 +7,6 @@ using Shared.Consts;
 using Infrastructure.Cache;
 using Microsoft.Azure.Cosmos;
 using Infrastructure.Config;
-using FluentValidation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using System.Text.Json.Serialization;
@@ -26,7 +25,6 @@ using PresentationRestAPI.Task.Interfaces;
 using PresentationRestAPI.User.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,46 +58,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = builder.Configuration["Google:ClientId"],
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = false // 🔹 Valida as chaves do Google
+            ValidateIssuerSigningKey = true
         };
     });
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//.AddJwtBearer(options =>
-//{
-//    options.Authority = "https://accounts.google.com";
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidIssuer = "https://accounts.google.com",
-//        ValidateAudience = true,
-//        ValidAudience = builder.Configuration["Google:ClientId"],
-//        ValidateLifetime = true
-//    };
-//});
-
-var d = builder.Configuration["Google:ClientId"];
-
-
-//    options.TokenValidationParameters = new TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//        ValidAudience = builder.Configuration["Jwt:Audience"],
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-//    };
-//})
-//.AddGoogle(options =>
-//{
-//    options.ClientId = builder.Configuration["Google:ClientId"];
-//    options.ClientSecret = builder.Configuration["Google:Secret"];
-//});
 
 builder.Services.AddAuthorization();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

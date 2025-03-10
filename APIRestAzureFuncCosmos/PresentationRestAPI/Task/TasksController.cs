@@ -1,6 +1,5 @@
 using Application.Task.DTOs;
 using Application.Task.Interfaces;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.Task.Interfaces;
