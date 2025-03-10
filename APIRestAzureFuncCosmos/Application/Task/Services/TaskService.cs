@@ -22,7 +22,7 @@ public class TaskService(ITaskRepository taskRepository,
     private readonly IHybridCacheService _cacheService = hybridCacheService;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
 
-    protected override string CacheKey { get => "task:"; }
+    public override string CacheKey { get => "task:"; }
 
     public async Task<List<TaskEntityDTO>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -57,6 +57,7 @@ public class TaskService(ITaskRepository taskRepository,
         var taskEntity = TaskMapper.ToEntity(createTaskDto, _dateTimeProvider);
         var createdTask = await _taskRepository.AddAsync(taskEntity, cancellationToken);
 
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdTask.Id}", createdTask);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return Result.Ok(TaskMapper.ToDTO(createdTask));
@@ -90,6 +91,7 @@ public class TaskService(ITaskRepository taskRepository,
         }
 
         await _cacheService.RemoveAsync($"{CacheKey}{updatedTask.Id}");
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{updatedTask.Id}", updatedTask);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return TaskMapper.ToDTO(updatedTask);
@@ -124,8 +126,9 @@ public class TaskService(ITaskRepository taskRepository,
 
         existingTask.AssignToUser(existingUser);
 
-        await _taskRepository.UpdateAsync(existingTask, cancellationToken);
         await _cacheService.RemoveAsync($"{CacheKey}{taskId}");
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{existingTask.Id}", existingTask);
+        await _taskRepository.UpdateAsync(existingTask, cancellationToken);
 
         return Result.Ok();
     }

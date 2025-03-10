@@ -14,7 +14,7 @@ public class UserService(IUserRepository userRepository,
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IHybridCacheService _cacheService = hybridCacheService;
 
-    protected override string CacheKey { get => "user:"; }
+    public override string CacheKey { get => "user:"; }
 
     public async Task<List<UserEntityDTO>> GetAllAsync(CancellationToken cancellationToken)
     {
@@ -50,6 +50,7 @@ public class UserService(IUserRepository userRepository,
         var userEntity = UserMapper.ToEntity(createUserDto);
         var createdUser = await _userRepository.AddAsync(userEntity, cancellationToken);
 
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdUser.Id}", createdUser);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return Result.Ok(UserMapper.ToDTO(createdUser));
