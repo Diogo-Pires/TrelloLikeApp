@@ -2,7 +2,6 @@ using Application.User.DTOs;
 using Application.User.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PresentationRestAPI.User.Interfaces;
 using Shared.Consts;
 
 namespace PresentationRestAPI.User;
@@ -85,59 +84,6 @@ public class UsersController(IUserService userService) : ControllerBase
             }
 
             return new OkObjectResult(user);
-        }
-        catch (ArgumentException ex)
-        {
-            return new BadRequestObjectResult(new { Error = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Creates an user.
-    /// </summary>
-    /// <param name="nameof(req)"></param>
-    /// <returns><see cref="UserEntityDTO"/></returns>
-    /// <remarks>
-    /// Usage Example:
-    /// POST user/
-    /// {
-    /// "name": "Diogo",
-    /// "email": "diogo@domain.com"
-    /// }
-    ///
-    /// Headers
-    /// Accept: application/json
-    /// </remarks>
-    /// <response code="201">Created</response>
-    /// <response code="400">Bad Request</response>
-    [HttpPost]
-    [ProducesResponseType(statusCode: StatusCodes.Status201Created, Type = typeof(CreatedAtActionResult))]
-    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadHttpRequestException))]
-    [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> CreateUser(UserEntityDTO userDTO,
-                                                [FromServices]IUserCreatorValidator createValidator,
-                                                CancellationToken cancellationToken)
-    {
-        try
-        {
-            var validationResult = await createValidator.ValidateAsync(userDTO, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                return new BadRequestObjectResult(validationResult.Errors);
-            }
-
-            var createdUser = await _userService.CreateAsync(userDTO, cancellationToken);
-            if (createdUser.IsFailed)
-            {
-                return new BadRequestObjectResult(new { Errors = createdUser.Errors.Select(e => e.Message) });
-            }
-
-            return new CreatedAtActionResult(
-                nameof(GetUserByEmail),
-                "User",
-                new { createdUser.Value.Id },
-                createdUser
-            );
         }
         catch (ArgumentException ex)
         {

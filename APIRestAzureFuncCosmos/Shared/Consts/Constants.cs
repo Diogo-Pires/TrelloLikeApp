@@ -23,10 +23,12 @@ public struct Constants
     public const string VALIDATION_TASK_INVALID_STATUS_TRANSITION = "Invalid status transition.";
     public const string VALIDATION_TASK_USER_CREATION = "An user cannot be provided during task's create/update";
     public const string VALIDATION_TASK_CREATEAT_COMPLETEAT = "CompleteAt cannot be greater than createAt";
-    public const string VALIDATION_USER_NAME_NOT_EMPTY = "User's name cannot be empty.";
-    public const string VALIDATION_USER_EMAIL_NOT_EMPTY = "User's email cannot be empty.";
-    public const string VALIDATION_USER_EMAIL_NOT_VALID = "User's email is not valid.";
     public const string VALIDATION_TASK_ID_EMPTY = "Task's id must be not empty";
     public const string VALIDATION_TASK_NOT_FOUND = "Task was not found.";
+    public const string VALIDATION_USER_NAME_NOT_EMPTY = "User's name cannot be empty.";
+    public const string VALIDATION_USER_GOOGLE_NOT_EMPTY = "User's google id cannot be empty.";
+    public const string VALIDATION_USER_EMAIL_NOT_EMPTY = "User's email cannot be empty.";
+    public const string VALIDATION_USER_EMAIL_NOT_VALID = "User's email is not valid.";
     public const string VALIDATION_USER_NOT_FOUND = "User was not found.";
+    public const string VALIDATION_USER_ALREADY_EXISTS = "User already exists.";
 }

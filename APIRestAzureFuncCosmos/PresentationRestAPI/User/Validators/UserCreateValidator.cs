@@ -17,6 +17,10 @@ public class UserCreateValidator : AbstractValidator<UserEntityDTO>, IUserCreato
             .NotEmpty()
             .WithMessage(Constants.VALIDATION_USER_NAME_NOT_EMPTY);
 
+        RuleFor(x => x.GoogleId)
+            .NotEmpty()
+            .WithMessage(Constants.VALIDATION_USER_GOOGLE_NOT_EMPTY);
+
         RuleFor(x => x.Id)
             .Matches(@"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$")
             .WithMessage(Constants.VALIDATION_USER_EMAIL_NOT_VALID)

@@ -1,4 +1,5 @@
-﻿using Domain.User.Interfaces;
+﻿using Domain.User.Exceptions;
+using Domain.User.Interfaces;
 using Infrastructure.Config;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
@@ -48,6 +49,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<Domain.User.UserEntity> AddAsync(Domain.User.UserEntity user, CancellationToken cancellationToken) =>
-        await _container.CreateItemAsync(user, new PartitionKey(user.Id), cancellationToken: cancellationToken);
+    public async Task<Domain.User.UserEntity> AddAsync(Domain.User.UserEntity user, CancellationToken cancellationToken)
+    {
+        if (await GetByEmailAsync(user.Id, cancellationToken) != null)
+        {
+            throw new UserException(Shared.Consts.Constants.VALIDATION_USER_ALREADY_EXISTS);
+        }
+
+        return await _container.CreateItemAsync(user, new PartitionKey(user.Id), cancellationToken: cancellationToken);
+    }
 }

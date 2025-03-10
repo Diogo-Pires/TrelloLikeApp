@@ -25,6 +25,7 @@ using PresentationRestAPI.Task.Interfaces;
 using PresentationRestAPI.User.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using PresentationRestAPI.User.Middleswares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,7 +123,8 @@ builder.Services.AddTransient<IUserService, UserService>();
 var app = builder.Build();
 
 
-app.UseAuthentication();
+app.UseAuthentication(); 
+app.UseMiddleware<UserValidationMiddleware>(); 
 app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
