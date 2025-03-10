@@ -1,6 +1,6 @@
 using Application.Task.DTOs;
 using Application.Task.Interfaces;
-using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.Task.Interfaces;
 using Shared.Consts;
@@ -8,6 +8,7 @@ using Shared.Consts;
 namespace PresentationRestAPI.Task;
 
 [ApiController]
+[Authorize]
 [Produces(UtilityConsts.APPJSON)]
 [Route("[controller]")]
 public class TasksController(ITaskService taskService) : ControllerBase
