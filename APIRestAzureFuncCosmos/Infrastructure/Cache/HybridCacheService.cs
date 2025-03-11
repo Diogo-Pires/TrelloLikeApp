@@ -40,27 +40,6 @@ public class HybridCacheService(IMemoryCache memoryCache, IDistributedCache dist
         return cachedValue;
     }
 
-    public async Task<T?> GetAsync<T>(string key) where T : class
-    {
-        // Try to get L1 cache
-        if (_memoryCache.TryGetValue(key, out T? cachedValue))
-        {
-            return cachedValue;
-        }
-
-        // Try to get L2 cache(Redis)
-        var redisData = await _distributedCache.GetStringAsync(key);
-        if (redisData != null)
-        {
-            cachedValue = JsonConvert.DeserializeObject<T>(redisData);
-            _memoryCache.Set(key, cachedValue, _cacheDuration);
-
-            return cachedValue;
-        }
-
-        return null;
-    }
-
     public async System.Threading.Tasks.Task SetIfNotExistsAsync<T>(string key, T data) where T : class
     {
         var redisData = await _distributedCache.GetStringAsync(key);

@@ -1,6 +1,5 @@
 ﻿using Application.User.DTOs;
 using Application.User.Interfaces;
-using Infrastructure.Cache.Interfaces;
 using PresentationRestAPI.User.Interfaces;
 using System.Security.Claims;
 
@@ -12,8 +11,7 @@ public class UserValidationMiddleware(RequestDelegate next)
 
     public async System.Threading.Tasks.Task Invoke(HttpContext context,
                                                     IUserService userService,
-                                                    IUserCreatorValidator createValidator,
-                                                    IHybridCacheService hybridCacheService)
+                                                    IUserCreatorValidator createValidator)
     {
         var user = context.User;
         if (user?.Identity?.IsAuthenticated != true)
@@ -34,7 +32,7 @@ public class UserValidationMiddleware(RequestDelegate next)
             return;
         }
 
-        if (await hybridCacheService.GetAsync<UserEntityDTO>($"{userService.CacheKey}{email}") != null)
+        if (await userService.GetByEmailAsync(email, CancellationToken.None) != null)
         {
             await _next(context);
             return;
