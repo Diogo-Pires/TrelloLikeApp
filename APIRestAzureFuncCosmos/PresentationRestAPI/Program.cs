@@ -28,6 +28,7 @@ using Microsoft.IdentityModel.Tokens;
 using PresentationRestAPI.User.Middleswares;
 
 var builder = WebApplication.CreateBuilder(args);
+var corsPolicyName = "AllowFrontend";
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -37,9 +38,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddPolicy(corsPolicyName, builder =>
     {
-        builder.WithOrigins("http://localhost:7223", "https://localhost:7223")
+        builder.WithOrigins("http://localhost:5173", "https://localhost:5173")
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials();
@@ -122,7 +123,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 
-
+app.UseCors(corsPolicyName);
 app.UseAuthentication(); 
 app.UseMiddleware<UserValidationMiddleware>(); 
 app.UseAuthorization();
