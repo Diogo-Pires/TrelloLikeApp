@@ -53,7 +53,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// GET task/id
+    /// GET tasks/id
     ///
     /// Headers
     /// Accept: application/json
@@ -93,13 +93,54 @@ public class TasksController(ITaskService taskService) : ControllerBase
     }
 
     /// <summary>
+    /// Get the tasks assgined to an user.
+    /// </summary>
+    /// <param name="nameof(email)"></param>
+    /// <returns><see cref="List<TaskEntityDTO>"/></returns>
+    /// <remarks>
+    /// Usage Example:
+    /// GET tasks/assignedTo/email
+    ///
+    /// Headers
+    /// Accept: application/json
+    /// </remarks>
+    /// <response code="200">Ok</response>
+    /// <response code="400">Bad Request</response>
+    /// <response code="404">Not Found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet($"assignedTo/{{email}}")]
+    [ProducesResponseType(statusCode: StatusCodes.Status200OK, Type = typeof(List<TaskEntityDTO>))]
+    [ProducesResponseType(statusCode: StatusCodes.Status400BadRequest, Type = typeof(BadRequestObjectResult))]
+    [ProducesResponseType(statusCode: StatusCodes.Status404NotFound, Type = typeof(NotFoundObjectResult))]
+    [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetTaskAssignedToAnUser(
+        string email,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+            }
+
+            var taskList = await _taskService.GetAssignedToAnUserAsync(email, cancellationToken);
+            return new OkObjectResult(taskList);
+        }
+        catch (ArgumentException ex)
+        {
+            return new BadRequestObjectResult(new { Error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Creates a task.
     /// </summary>
     /// <param name="nameof(req)"></param>
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// POST task/
+    /// POST tasks/
     /// {
     /// "title": "Aprender Azure 41",
     /// "description": "Estudar Azure Functions 2",
@@ -155,7 +196,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// PUT task/
+    /// PUT tasks/
     /// {
     /// "id": "fc7c69b1-27cb-4dd9-a633-45cce665a563",
     /// "title": "Aprender Azure 41",
@@ -208,7 +249,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <returns><see cref="NoContentResult"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// DELETE task/id
+    /// DELETE tasks/id
     ///
     /// Headers
     /// Accept: application/json
@@ -255,7 +296,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// PATCH task/id/assign/email
+    /// PATCH tasks/id/assign/email
     ///
     /// Headers
     /// Accept: application/json

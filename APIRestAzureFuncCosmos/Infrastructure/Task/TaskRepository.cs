@@ -50,6 +50,25 @@ public class TaskRepository : ITaskRepository
         }
     }
 
+    public async Task<List<TaskEntity>> GetAssignedToAnUserAsync(string email, CancellationToken cancellationToken)
+    {
+        var taskList = new List<TaskEntity>();
+
+        using (FeedIterator<TaskEntity> iterator = _container
+            .GetItemLinqQueryable<TaskEntity>()
+            .Where(x => x.AssignedUserEmail == email.Trim())
+            .ToFeedIterator())
+        {
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync(cancellationToken);
+                taskList.AddRange(response);
+            }
+        }
+
+        return taskList;
+    }
+
     public async Task<TaskEntity> AddAsync(TaskEntity task, CancellationToken cancellationToken) =>
         await _container.CreateItemAsync(task, new PartitionKey(task.Id.ToString()), cancellationToken: cancellationToken);
 

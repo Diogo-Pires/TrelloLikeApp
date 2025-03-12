@@ -74,7 +74,7 @@ public class TaskFunction(ITaskService taskService,
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// GET task/id
+    /// GET tasks/id
     ///
     /// Headers
     /// Accept: application/json
@@ -125,7 +125,7 @@ public class TaskFunction(ITaskService taskService,
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// POST task/
+    /// POST tasks/
     /// {
     /// "title": "Aprender Azure 41",
     /// "description": "Estudar Azure Functions 2",
@@ -187,7 +187,7 @@ public class TaskFunction(ITaskService taskService,
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// PUT task/
+    /// PUT tasks/
     /// {
     /// "id": "fc7c69b1-27cb-4dd9-a633-45cce665a563",
     /// "title": "Aprender Azure 41",
@@ -247,7 +247,7 @@ public class TaskFunction(ITaskService taskService,
     /// <returns><see cref="NoContentResult"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// DELETE task/id
+    /// DELETE tasks/id
     ///
     /// Headers
     /// Accept: application/json
@@ -299,7 +299,7 @@ public class TaskFunction(ITaskService taskService,
     /// <returns><see cref="TaskEntityDTO"/></returns>
     /// <remarks>
     /// Usage Example:
-    /// PATCH task/id/assign/email
+    /// PATCH tasks/id/assign/email
     ///
     /// Headers
     /// Accept: application/json
