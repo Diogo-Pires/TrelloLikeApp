@@ -4,6 +4,7 @@ public interface ITaskRepository
 {
     Task<List<TaskEntity>> GetAllAsync(CancellationToken cancellationToken);
     Task<TaskEntity?> GetByIdAsync(Guid? id, CancellationToken cancellationToken);
+    Task<List<TaskEntity>> GetAssignedToAnUserAsync(string email, CancellationToken cancellationToken);
     Task<TaskEntity> AddAsync(TaskEntity task, CancellationToken cancellationToken);
     Task<TaskEntity?> UpdateAsync(TaskEntity task, CancellationToken cancellationToken);
     Task<bool> DeleteByIdAsync(Guid id, CancellationToken cancellationToken);

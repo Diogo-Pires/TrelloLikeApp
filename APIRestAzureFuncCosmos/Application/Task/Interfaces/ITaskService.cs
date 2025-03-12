@@ -10,4 +10,5 @@ public interface ITaskService
     Task<Result<TaskEntityDTO?>> UpdateAsync(TaskEntityDTO taskDto, CancellationToken cancellationToken);
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<Result> AssignTaskToUserAsync(Guid taskId, string email, CancellationToken cancellationToken);
+    Task<List<TaskEntityDTO>> GetAssignedToAnUserAsync(string email, CancellationToken cancellationToken);
 }

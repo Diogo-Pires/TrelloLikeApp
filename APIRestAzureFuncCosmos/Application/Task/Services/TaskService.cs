@@ -51,6 +51,17 @@ public class TaskService(ITaskRepository taskRepository,
         return TaskMapper.ToDTO(task);
     }
 
+    public async Task<List<TaskEntityDTO>> GetAssignedToAnUserAsync(string email, CancellationToken cancellationToken)
+    {
+        var cachekey = $"{CacheKey}{email}:{BASE_CACHEKEY_ALL}";
+        return await _cacheService
+            .GetOrSetAsync(cachekey, async () =>
+                (await _taskRepository.GetAssignedToAnUserAsync(email, cancellationToken))
+                        .Select(TaskMapper.ToDTO)
+                        .ToList()
+            ) ?? [];
+    }
+
     public async Task<Result<TaskEntityDTO>> CreateAsync(TaskEntityDTO createTaskDto,
                                                          CancellationToken cancellationToken)
     {
