@@ -9,5 +9,5 @@ public abstract class BaseHybridCacheService
     public abstract string CacheKey { get; }
 
     protected async System.Threading.Tasks.Task ClearAllRequestFromCacheAsync(IHybridCacheService hybridCacheService) =>
-        await hybridCacheService.RemoveAsync($"{CacheKey}{BASE_CACHEKEY_ALL}");
+        await hybridCacheService.RemoveAsync($"{CacheKey}{BASE_CACHEKEY_ALL}", CacheKey);
 }

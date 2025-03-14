@@ -15,7 +15,6 @@ public record TaskEntityDTO
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public TaskEntityStatus? Status { get; init; }
 
-    [JsonIgnore]
     public DateTime? CreatedAt { get; init; }
 
     [JsonIgnore]
@@ -23,7 +22,7 @@ public record TaskEntityDTO
 
     public DateTime? Deadline { get; init; }
 
-    public UserEntityDTO? User { get; init; }
+    public string? AssignedUserEmail { get; init; }
 
     public TaskEntityDTO()
     {
@@ -37,7 +36,7 @@ public record TaskEntityDTO
                    DateTime? createdAt,
                    DateTime? completedAt,
                    DateTime? deadline,
-                   UserEntityDTO? userDTO)
+                   string assignedUserEmail)
     {
         Id = id;
         Title = title;
@@ -46,19 +45,19 @@ public record TaskEntityDTO
         CreatedAt = createdAt;
         CompletedAt = completedAt;
         Deadline = deadline;
-        User = userDTO;
+        AssignedUserEmail = assignedUserEmail;
     }
 
     public TaskEntityDTO(string title,
                    string description,
                    TaskEntityStatus? status,
                    DateTime? deadline,
-                   UserEntityDTO? userDTO)
+                   string assignedUserEmail)
     {
         Title = title;
         Description = description;
         Status = status;
         Deadline = deadline;
-        User = userDTO;
+        AssignedUserEmail = assignedUserEmail;
     }
 }

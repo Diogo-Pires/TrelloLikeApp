@@ -11,4 +11,5 @@ public interface ITaskService
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<Result> AssignTaskToUserAsync(Guid taskId, string email, CancellationToken cancellationToken);
     Task<List<TaskEntityDTO>> GetAssignedToAnUserAsync(string email, CancellationToken cancellationToken);
+    System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken);
 }

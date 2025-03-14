@@ -90,4 +90,27 @@ public class UsersController(IUserService userService) : ControllerBase
             return new BadRequestObjectResult(new { Error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Deletes all users related cache.
+    /// </summary>
+    /// <returns><see cref="NoContentResult"/></returns>
+    /// <remarks>
+    /// Usage Example:
+    /// DELETE users/
+    ///
+    /// Headers
+    /// Accept: application/json
+    /// </remarks>
+    /// <response code="204">No Content</response>
+    /// <response code="500">Internal server error</response>
+    [HttpDelete]
+    [ProducesResponseType(statusCode: StatusCodes.Status204NoContent, Type = typeof(NoContentResult))]
+    [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ClearAllCaches(
+        CancellationToken cancellationToken)
+    {
+        await _userService.DeleteAllCacheAsync(cancellationToken);
+        return new NoContentResult();
+    }
 }

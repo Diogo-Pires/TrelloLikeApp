@@ -31,4 +31,5 @@ public struct Constants
     public const string VALIDATION_USER_EMAIL_NOT_VALID = "User's email is not valid.";
     public const string VALIDATION_USER_NOT_FOUND = "User was not found.";
     public const string VALIDATION_USER_ALREADY_EXISTS = "User already exists.";
+    public const string CACHE_VERSION_WRONG_FORMAT = "Cache version is not well formatted.";
 }
