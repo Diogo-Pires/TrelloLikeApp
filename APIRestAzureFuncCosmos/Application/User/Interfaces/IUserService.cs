@@ -9,4 +9,5 @@ public interface IUserService
     Task<List<UserEntityDTO>> GetAllAsync(CancellationToken cancellationToken);
     Task<UserEntityDTO?> GetByEmailAsync(string email, CancellationToken cancellationToken);
     Task<Result<UserEntityDTO>> CreateAsync(UserEntityDTO createUserDto, CancellationToken cancellationToken);
+    System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken);
 }

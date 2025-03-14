@@ -22,13 +22,13 @@ public class TaskService(ITaskRepository taskRepository,
     private readonly IHybridCacheService _cacheService = hybridCacheService;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
 
-    public override string CacheKey { get => "task:"; }
+    public override string CacheKey { get => "tasks:"; }
 
     public async Task<List<TaskEntityDTO>> GetAllAsync(CancellationToken cancellationToken)
     {
         var cachekey = $"{CacheKey}{BASE_CACHEKEY_ALL}";
         return await _cacheService
-            .GetOrSetAsync(cachekey, async () =>
+            .GetOrSetAsync(cachekey, CacheKey, async () =>
                 (await _taskRepository.GetAllAsync(cancellationToken))
                         .Select(TaskMapper.ToDTO)
                         .ToList()
@@ -39,7 +39,7 @@ public class TaskService(ITaskRepository taskRepository,
     {
         var cachekey = $"{CacheKey}{id}";
         var task = await _cacheService
-            .GetOrSetAsync(cachekey, async () =>
+            .GetOrSetAsync(cachekey, CacheKey, async () =>
                 await _taskRepository.GetByIdAsync(id, cancellationToken)
             );
 
@@ -55,7 +55,7 @@ public class TaskService(ITaskRepository taskRepository,
     {
         var cachekey = $"{CacheKey}{email}:{BASE_CACHEKEY_ALL}";
         return await _cacheService
-            .GetOrSetAsync(cachekey, async () =>
+            .GetOrSetAsync(cachekey, CacheKey, async () =>
                 (await _taskRepository.GetAssignedToAnUserAsync(email, cancellationToken))
                         .Select(TaskMapper.ToDTO)
                         .ToList()
@@ -68,7 +68,7 @@ public class TaskService(ITaskRepository taskRepository,
         var taskEntity = TaskMapper.ToEntity(createTaskDto, _dateTimeProvider);
         var createdTask = await _taskRepository.AddAsync(taskEntity, cancellationToken);
 
-        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdTask.Id}", createdTask);
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdTask.Id}", CacheKey, createdTask);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return Result.Ok(TaskMapper.ToDTO(createdTask));
@@ -101,8 +101,8 @@ public class TaskService(ITaskRepository taskRepository,
             return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
         }
 
-        await _cacheService.RemoveAsync($"{CacheKey}{updatedTask.Id}");
-        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{updatedTask.Id}", updatedTask);
+        await _cacheService.RemoveAsync($"{CacheKey}{updatedTask.Id}", CacheKey);
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{updatedTask.Id}", CacheKey, updatedTask);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return TaskMapper.ToDTO(updatedTask);
@@ -114,7 +114,7 @@ public class TaskService(ITaskRepository taskRepository,
 
         if (result)
         {
-            await _cacheService.RemoveAsync($"{CacheKey}{id}");
+            await _cacheService.RemoveAsync($"{CacheKey}{id}", CacheKey);
             await ClearAllRequestFromCacheAsync(_cacheService);
         }
 
@@ -137,10 +137,15 @@ public class TaskService(ITaskRepository taskRepository,
 
         existingTask.AssignToUser(existingUser);
 
-        await _cacheService.RemoveAsync($"{CacheKey}{taskId}");
-        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{existingTask.Id}", existingTask);
+        await _cacheService.RemoveAsync($"{CacheKey}{taskId}", CacheKey);
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{existingTask.Id}", CacheKey, existingTask);
         await _taskRepository.UpdateAsync(existingTask, cancellationToken);
 
         return Result.Ok();
+    }
+
+    public async System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken)
+    {
+        await _cacheService.IncrementVersion(CacheKey);
     }
 }

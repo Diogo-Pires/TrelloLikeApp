@@ -35,15 +35,8 @@ public class TasksController(ITaskService taskService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllTasks(CancellationToken cancellationToken)
     {
-        try
-        {
-            var taskList = await _taskService.GetAllAsync(cancellationToken);
-            return new OkObjectResult(taskList);
-        }
-        catch (ArgumentException ex)
-        {
-            return new BadRequestObjectResult(new { Error = ex.Message });
-        }
+        var taskList = await _taskService.GetAllAsync(cancellationToken);
+        return new OkObjectResult(taskList);
     }
 
     /// <summary>
@@ -337,5 +330,28 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             return new BadRequestObjectResult(new { Error = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Deletes all tasks related cache.
+    /// </summary>
+    /// <returns><see cref="NoContentResult"/></returns>
+    /// <remarks>
+    /// Usage Example:
+    /// DELETE tasks/
+    ///
+    /// Headers
+    /// Accept: application/json
+    /// </remarks>
+    /// <response code="204">No Content</response>
+    /// <response code="500">Internal server error</response>
+    [HttpDelete]
+    [ProducesResponseType(statusCode: StatusCodes.Status204NoContent, Type = typeof(NoContentResult))]
+    [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> ClearAllCaches(
+        CancellationToken cancellationToken)
+    {
+        await _taskService.DeleteAllCacheAsync(cancellationToken);
+        return new NoContentResult();
     }
 }

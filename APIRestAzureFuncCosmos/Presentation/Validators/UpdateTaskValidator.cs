@@ -13,7 +13,7 @@ public class UpdateTaskValidator : AbstractValidator<TaskEntityDTO>
             .NotNull()
             .WithMessage(Constants.VALIDATION_INVALID_JSON_REQUEST);
 
-        RuleFor(t => t.User)
+        RuleFor(t => t.AssignedUserEmail)
             .Empty()
             .WithMessage(Constants.VALIDATION_TASK_USER_CREATION);
 

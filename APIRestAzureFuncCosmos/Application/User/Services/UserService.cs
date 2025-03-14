@@ -20,7 +20,7 @@ public class UserService(IUserRepository userRepository,
     {
         var cachekey = $"{CacheKey}{BASE_CACHEKEY_ALL}";
         return await _cacheService
-            .GetOrSetAsync(cachekey, async () =>
+            .GetOrSetAsync(cachekey, CacheKey, async () =>
                 (await _userRepository.GetAllAsync(cancellationToken))
                         .Select(UserMapper.ToDTO)
                         .ToList()
@@ -33,7 +33,7 @@ public class UserService(IUserRepository userRepository,
         var cachekey = $"{CacheKey}{email}";
 
         var user = await _cacheService
-            .GetOrSetAsync(cachekey, async () =>
+            .GetOrSetAsync(cachekey, CacheKey, async () =>
                 await _userRepository.GetByEmailAsync(email, cancellationToken)
             );
 
@@ -50,9 +50,14 @@ public class UserService(IUserRepository userRepository,
         var userEntity = UserMapper.ToEntity(createUserDto);
         var createdUser = await _userRepository.AddAsync(userEntity, cancellationToken);
 
-        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdUser.Id}", createdUser);
+        await _cacheService.SetIfNotExistsAsync($"{CacheKey}{createdUser.Id}", CacheKey, createdUser);
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return Result.Ok(UserMapper.ToDTO(createdUser));
+    }
+
+    public async System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken)
+    {
+        await _cacheService.IncrementVersion(CacheKey);
     }
 }

@@ -32,20 +32,17 @@ public class TaskEntity
     [JsonProperty("deadline")]
     public DateTime? Deadline { get; private set; }
 
-    [JsonProperty("assignedUserEmail")]
+    [JsonProperty("assignedUseBrEmail")]
     public string? AssignedUserEmail { get; private set; }
 
     [JsonIgnore]
     public ITaskState State => TaskStateManager.GetState(Status);
 
-    [JsonIgnore]
-    public UserEntity? AssignedUser { get; private set; }
-
     public TaskEntity(string title,
                       string description,
                       DateTime? deadline,
                       TaskEntityStatus? taskEntityStatus,
-                      UserEntity? assignedUser,
+                      string? assignedUserEmail,
                       IDateTimeProvider dateTimeProvider)
     {
         var deadlineObj = new DeadlineValueObject(deadline, CreatedAt, dateTimeProvider);
@@ -56,7 +53,7 @@ public class TaskEntity
         CreatedAt = dateTimeProvider != null ? dateTimeProvider.GetUTCNow() : new DateTimeProvider().GetUTCNow();
         Deadline = deadlineObj.Value;
         Status = taskEntityStatus ?? TaskEntityStatus.Pending;
-        AssignedUser = assignedUser;
+        AssignedUserEmail = assignedUserEmail;
     }
 
     public void SetCompletedAt(DateTime dateTime) => CompletedAt = dateTime;
@@ -84,7 +81,6 @@ public class TaskEntity
     public void AssignToUser(UserEntity user)
     {
         AssignedUserEmail = user.Id;
-        AssignedUser = user;
     }
 
     private void UpdateTaskState(TaskEntityStatus? newTaskEntityStatus)

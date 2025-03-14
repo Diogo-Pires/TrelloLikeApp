@@ -12,7 +12,7 @@ public static class TaskMapper
             dto.Description.Trim(),
             dto.Deadline,
             dto.Status,
-            dto.User != null ? UserMapper.ToEntity(dto.User) : null,
+            dto.AssignedUserEmail,
             dateTimeProvider);
 
     public static TaskEntityDTO ToDTO(TaskEntity entity) =>
@@ -23,5 +23,5 @@ public static class TaskMapper
             entity.CreatedAt,
             entity.CompletedAt,
             entity.Deadline,
-            entity.AssignedUser != null ? UserMapper.ToDTO(entity.AssignedUser) : null);
+            entity.AssignedUserEmail);
 }
