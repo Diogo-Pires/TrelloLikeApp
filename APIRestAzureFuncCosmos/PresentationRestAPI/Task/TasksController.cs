@@ -2,6 +2,7 @@ using Application.Task.DTOs;
 using Application.Task.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PresentationRestAPI.DTOs;
 using PresentationRestAPI.Task.Interfaces;
 using Shared.Consts;
 
@@ -68,7 +69,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             var task = await _taskService.GetByIdAsync(id, cancellationToken);
@@ -81,7 +82,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 
@@ -114,7 +115,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
             }
 
             var taskList = await _taskService.GetAssignedToAnUserAsync(email, cancellationToken);
@@ -122,7 +123,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 
@@ -160,13 +161,13 @@ public class TasksController(ITaskService taskService) : ControllerBase
             var validationResult = await createValidator.ValidateAsync(taskDTO, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
             }
 
             var createdTask = await _taskService.CreateAsync(taskDTO, cancellationToken);
             if (createdTask.IsFailed)
             {
-                return new BadRequestObjectResult(new { Errors = createdTask.Errors.Select(e => e.Message) });
+                return new BadRequestObjectResult(new ApiErrorResponse(createdTask.Errors).Errors);
             }
 
             return new CreatedAtActionResult(
@@ -178,7 +179,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 
@@ -218,20 +219,20 @@ public class TasksController(ITaskService taskService) : ControllerBase
             var validationResult = await updateValidator.ValidateAsync(taskDTO, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
             }
 
             var updatedTask = await _taskService.UpdateAsync(taskDTO, cancellationToken);
             if (updatedTask.IsFailed)
             {
-                return new BadRequestObjectResult(new { Errors = updatedTask.Errors.Select(e => e.Message) });
+                return new BadRequestObjectResult(new ApiErrorResponse(updatedTask.Errors).Errors);
             }
 
             return new OkObjectResult(updatedTask.Value);
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 
@@ -264,7 +265,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             var deleted = await _taskService.DeleteAsync(id, cancellationToken);
@@ -277,7 +278,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 
@@ -310,12 +311,12 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
             }
 
             var task = await _taskService.AssignTaskToUserAsync(id, email, cancellationToken);
@@ -328,7 +329,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 

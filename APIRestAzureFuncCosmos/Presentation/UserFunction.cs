@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Presentation.DTOs;
 using Presentation.Interfaces;
 using Shared.Consts;
 using Shared.Validations;
@@ -55,10 +56,6 @@ public class UserFunction(IUserService userService,
             var userList = await _userService.GetAllAsync(cancellationToken);
             return new OkObjectResult(userList);
         }
-        catch (ArgumentException ex)
-        {
-            return new BadRequestObjectResult(new { Error = ex.Message });
-        }
         catch (Exception ex)
         {
             return _exceptionHandler.HandleException(ex);
@@ -95,7 +92,7 @@ public class UserFunction(IUserService userService,
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -108,7 +105,7 @@ public class UserFunction(IUserService userService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
@@ -151,13 +148,13 @@ public class UserFunction(IUserService userService,
             var validationResult = await _createValidator.ValidateAsync(createUserDto, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);
             if(createdUser.IsFailed)
             {
-                return new BadRequestObjectResult(new { Errors = createdUser.Errors.Select(e => e.Message) });
+                return new BadRequestObjectResult(new ApiErrorResponse(createdUser.Errors).Errors);
             }
 
             return new CreatedAtActionResult(
@@ -169,7 +166,7 @@ public class UserFunction(IUserService userService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
