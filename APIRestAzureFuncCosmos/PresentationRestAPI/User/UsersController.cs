@@ -2,6 +2,7 @@ using Application.User.DTOs;
 using Application.User.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PresentationRestAPI.DTOs;
 using Shared.Consts;
 
 namespace PresentationRestAPI.User;
@@ -34,15 +35,8 @@ public class UsersController(IUserService userService) : ControllerBase
     [ProducesResponseType(statusCode: StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
     {
-        try
-        {
-            var userList = await _userService.GetAllAsync(cancellationToken);
-            return new OkObjectResult(userList);
-        }
-        catch (ArgumentException ex)
-        {
-            return new BadRequestObjectResult(new { Error = ex.Message });
-        }
+        var userList = await _userService.GetAllAsync(cancellationToken);
+        return new OkObjectResult(userList);
     }
 
     /// <summary>
@@ -74,7 +68,7 @@ public class UsersController(IUserService userService) : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -87,7 +81,7 @@ public class UsersController(IUserService userService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
     }
 

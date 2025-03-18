@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Presentation.DTOs;
 using Presentation.Interfaces;
 using Shared.Consts;
 using Shared.Validations;
@@ -57,10 +58,6 @@ public class TaskFunction(ITaskService taskService,
             var taskList = await _taskService.GetAllAsync(cancellationToken);
             return new OkObjectResult(taskList);
         }
-        catch (ArgumentException ex)
-        {
-            return new BadRequestObjectResult(new { Error = ex.Message });
-        }
         catch (Exception ex)
         {
             return _exceptionHandler.HandleException(ex);
@@ -97,7 +94,7 @@ public class TaskFunction(ITaskService taskService,
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             var task = await _taskService.GetByIdAsync(id, cancellationToken);
@@ -110,7 +107,7 @@ public class TaskFunction(ITaskService taskService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
@@ -154,13 +151,13 @@ public class TaskFunction(ITaskService taskService,
             var validationResult = await _createValidator.ValidateAsync(createTaskDto, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
             }
 
             var createdTask = await _taskService.CreateAsync(createTaskDto, cancellationToken);
             if(createdTask.IsFailed)
             {
-                return new BadRequestObjectResult(new { Errors = createdTask.Errors.Select(e => e.Message) });
+                return new BadRequestObjectResult(new ApiErrorResponse(createdTask.Errors).Errors);
             }
 
             return new CreatedAtActionResult(
@@ -172,7 +169,7 @@ public class TaskFunction(ITaskService taskService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
@@ -219,20 +216,20 @@ public class TaskFunction(ITaskService taskService,
             var validationResult = await _updateValidator.ValidateAsync(updateTaskDto, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(validationResult.Errors);
+                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
             }
 
             var updatedTask = await _taskService.UpdateAsync(updateTaskDto, cancellationToken);
             if (updatedTask.IsFailed)
             {
-                return new BadRequestObjectResult(new { Errors = updatedTask.Errors.Select(e => e.Message) });
+                return new BadRequestObjectResult(new ApiErrorResponse(updatedTask.Errors).Errors);
             }
 
             return new OkObjectResult(updatedTask.Value);
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
@@ -270,7 +267,7 @@ public class TaskFunction(ITaskService taskService,
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             var deleted = await _taskService.DeleteAsync(id, cancellationToken);
@@ -283,7 +280,7 @@ public class TaskFunction(ITaskService taskService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
@@ -324,12 +321,12 @@ public class TaskFunction(ITaskService taskService,
         {
             if (taskId == Guid.Empty)
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_TASK_ID_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
             }
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new { Error = Constants.VALIDATION_USER_EMAIL_NOT_EMPTY });
+                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
             }
 
             var task = await _taskService.AssignTaskToUserAsync(taskId, email, cancellationToken);
@@ -342,7 +339,7 @@ public class TaskFunction(ITaskService taskService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new { Error = ex.Message });
+            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
         }
         catch (Exception ex)
         {
