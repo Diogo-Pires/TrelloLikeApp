@@ -26,9 +26,29 @@ using PresentationRestAPI.User.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PresentationRestAPI.User.Middleswares;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5, 
+                Window = TimeSpan.FromSeconds(10), 
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }
+        );
+    });
+
+    options.RejectionStatusCode = 429;
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -123,6 +143,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 
+app.UseRateLimiter();
 app.UseCors(corsPolicyName);
 app.UseAuthentication(); 
 app.UseMiddleware<UserValidationMiddleware>(); 
