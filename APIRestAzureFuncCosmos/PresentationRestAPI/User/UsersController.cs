@@ -68,7 +68,7 @@ public class UsersController(IUserService userService) : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY));
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -81,7 +81,7 @@ public class UsersController(IUserService userService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 

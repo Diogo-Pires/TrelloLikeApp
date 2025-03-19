@@ -69,7 +69,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_TASK_ID_NOT_EMPTY));
             }
 
             var task = await _taskService.GetByIdAsync(id, cancellationToken);
@@ -82,7 +82,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 
@@ -115,7 +115,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY));
             }
 
             var taskList = await _taskService.GetAssignedToAnUserAsync(email, cancellationToken);
@@ -123,7 +123,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 
@@ -161,13 +161,13 @@ public class TasksController(ITaskService taskService) : ControllerBase
             var validationResult = await createValidator.ValidateAsync(taskDTO, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(validationResult.Errors));
             }
 
             var createdTask = await _taskService.CreateAsync(taskDTO, cancellationToken);
             if (createdTask.IsFailed)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(createdTask.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(createdTask.Errors));
             }
 
             return new CreatedAtActionResult(
@@ -179,7 +179,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 
@@ -219,20 +219,20 @@ public class TasksController(ITaskService taskService) : ControllerBase
             var validationResult = await updateValidator.ValidateAsync(taskDTO, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(validationResult.Errors));
             }
 
             var updatedTask = await _taskService.UpdateAsync(taskDTO, cancellationToken);
             if (updatedTask.IsFailed)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(updatedTask.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(updatedTask.Errors));
             }
 
             return new OkObjectResult(updatedTask.Value);
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 
@@ -265,7 +265,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_TASK_ID_NOT_EMPTY));
             }
 
             var deleted = await _taskService.DeleteAsync(id, cancellationToken);
@@ -278,7 +278,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 
@@ -311,12 +311,12 @@ public class TasksController(ITaskService taskService) : ControllerBase
         {
             if (id == Guid.Empty)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_TASK_ID_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_TASK_ID_NOT_EMPTY));
             }
 
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY));
             }
 
             var task = await _taskService.AssignTaskToUserAsync(id, email, cancellationToken);
@@ -329,7 +329,7 @@ public class TasksController(ITaskService taskService) : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
     }
 

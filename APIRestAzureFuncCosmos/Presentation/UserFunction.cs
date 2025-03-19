@@ -92,7 +92,7 @@ public class UserFunction(IUserService userService,
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(Constants.VALIDATION_USER_EMAIL_NOT_EMPTY));
             }
 
             var user = await _userService.GetByEmailAsync(email, cancellationToken);
@@ -105,7 +105,7 @@ public class UserFunction(IUserService userService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
         catch (Exception ex)
         {
@@ -148,13 +148,13 @@ public class UserFunction(IUserService userService,
             var validationResult = await _createValidator.ValidateAsync(createUserDto, cancellationToken);
             if (!validationResult.IsValid)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(validationResult.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(validationResult.Errors));
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);
             if(createdUser.IsFailed)
             {
-                return new BadRequestObjectResult(new ApiErrorResponse(createdUser.Errors).Errors);
+                return new BadRequestObjectResult(ApiErrorResponse.Build(createdUser.Errors));
             }
 
             return new CreatedAtActionResult(
@@ -166,7 +166,7 @@ public class UserFunction(IUserService userService,
         }
         catch (ArgumentException ex)
         {
-            return new BadRequestObjectResult(new ApiErrorResponse(ex.Message).Errors);
+            return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
         }
         catch (Exception ex)
         {
