@@ -1,35 +1,26 @@
-﻿using System.Collections;
+﻿namespace PresentationRestAPI.DTOs;
 
-namespace PresentationRestAPI.DTOs;
-
-public class ApiErrorResponse : IEnumerable<string>
+public class ApiErrorResponse
 {
-    private readonly List<string> _errors;
+    public List<string> Errors { get; set; } = [];
 
-    public ApiErrorResponse(IEnumerable<string> errors)
+    public static ApiErrorResponse Build(string error)
     {
-        _errors = new List<string>(errors ?? throw new ArgumentNullException(nameof(errors)));
+        return new ApiErrorResponse { Errors = [error] };
     }
 
-    public ApiErrorResponse(List<FluentResults.IError> errors)
+    public static ApiErrorResponse Build(IEnumerable<string> errors)
     {
-        _errors = new List<string>(errors.Select(e => e.Message) ?? throw new ArgumentNullException(nameof(errors)));
+        return new ApiErrorResponse { Errors = errors?.ToList() ?? throw new ArgumentNullException(nameof(errors)) };
     }
 
-    public ApiErrorResponse(List<FluentValidation.Results.ValidationFailure> errors)
+    public static ApiErrorResponse Build(List<FluentResults.IError> errors)
     {
-        _errors = new List<string>(errors.Select(e => e.ErrorMessage) ?? throw new ArgumentNullException(nameof(errors)));
+        return new ApiErrorResponse { Errors = errors?.Select(e => e.Message).ToList() ?? throw new ArgumentNullException(nameof(errors)) };
     }
 
-    public ApiErrorResponse(string error)
+    public static ApiErrorResponse Build(List<FluentValidation.Results.ValidationFailure> errors)
     {
-        if (string.IsNullOrWhiteSpace(error))
-            throw new ArgumentException("Error cannot be null or empty.", nameof(error));
-
-        _errors = [error];
+        return new ApiErrorResponse { Errors = errors?.Select(e => e.ErrorMessage).ToList() ?? throw new ArgumentNullException(nameof(errors)) };
     }
-
-    public IReadOnlyList<string> Errors => _errors.AsReadOnly();
-    public IEnumerator<string> GetEnumerator() => _errors.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
