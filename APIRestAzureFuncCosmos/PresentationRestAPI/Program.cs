@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PresentationRestAPI.User.Middleswares;
 using System.Threading.RateLimiting;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
@@ -50,9 +51,23 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
-// Add services to the container.
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),  
+        new HeaderApiVersionReader("X-Api-Version"), 
+        new QueryStringApiVersionReader("api-version") 
+    );
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VV"; 
+    options.SubstituteApiVersionInUrl = true;
+});
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
@@ -66,7 +81,6 @@ builder.Services.AddCors(options =>
                .AllowCredentials();
     });
 });
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -143,6 +157,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 
+app.UseRouting();
 app.UseRateLimiter();
 app.UseCors(corsPolicyName);
 app.UseAuthentication(); 
@@ -155,7 +170,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.MapControllers();

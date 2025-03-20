@@ -1,5 +1,6 @@
 using Application.Task.DTOs;
 using Application.Task.Interfaces;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.DTOs;
@@ -11,7 +12,9 @@ namespace PresentationRestAPI.Task;
 [ApiController]
 [Authorize]
 [Produces(UtilityConsts.APPJSON)]
+[Route("[controller]/v{version:apiVersion}")] 
 [Route("[controller]")]
+[ApiVersion("1.0")] 
 public class TasksController(ITaskService taskService) : ControllerBase
 {
     private readonly ITaskService _taskService = taskService;
