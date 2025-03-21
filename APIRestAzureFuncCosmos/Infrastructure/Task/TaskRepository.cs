@@ -1,4 +1,5 @@
 ﻿using Domain.Task;
+using Domain.Task.Exceptions;
 using Domain.Task.Interfaces;
 using Infrastructure.Config;
 using Microsoft.Azure.Cosmos;
@@ -61,7 +62,7 @@ public class TaskRepository : ITaskRepository
         {
             while (iterator.HasMoreResults)
             {
-                var response = await iterator.ReadNextAsync(cancellationToken);
+                var response = await iterator.ReadNextAsync(cancellationToken)  ;
                 taskList.AddRange(response);
             }
         }
@@ -74,8 +75,24 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskEntity?> UpdateAsync(TaskEntity task, CancellationToken cancellationToken)
     {
-        var response = await _container.UpsertItemAsync(task, new PartitionKey(task.Id.ToString()), cancellationToken: cancellationToken);
-        return response.StatusCode == HttpStatusCode.OK ? task : null;
+        try
+        {
+            var taskId = task.Id.ToString();
+            var response = await _container.ReplaceItemAsync(task,
+                                                             taskId,
+                                                             new PartitionKey(taskId),
+                                                             new ItemRequestOptions
+                                                             {
+                                                                 IfMatchEtag = task.ETag
+                                                             },
+                                                             cancellationToken: cancellationToken);
+
+            return response.StatusCode == HttpStatusCode.OK ? task : null;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.PreconditionFailed)
+        {
+            throw new TaskUpdateConcurrenctException(task.Id.ToString());
+        }
     }
 
     public async Task<bool> DeleteByIdAsync(Guid id, CancellationToken cancellationToken)

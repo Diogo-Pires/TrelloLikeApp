@@ -2,6 +2,7 @@
 using Application.Task.Interfaces;
 using Application.Task.Mappers;
 using Domain;
+using Domain.Task;
 using Domain.Task.Interfaces;
 using Domain.User.Interfaces;
 using FluentResults;
@@ -83,26 +84,28 @@ public class TaskService(ITaskRepository taskRepository,
             return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
         }
 
+        TaskEntity? updatedTask;
         try
         {
             existingTask.UpdateTask(updateTaskDto.Title,
                                     updateTaskDto.Description,
                                     updateTaskDto.Deadline,
                                     updateTaskDto.Status);
+
+            updatedTask = await _taskRepository.UpdateAsync(existingTask, cancellationToken);
+            if (updatedTask == null)
+            {
+                return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
+            }
         }
         catch (DomainException ex)
         {
             return Result.Fail(new Error(ex.Message));
         }
 
-        var updatedTask = await _taskRepository.UpdateAsync(existingTask, cancellationToken);
-        if (updatedTask == null)
-        {
-            return Result.Fail(new Error(Constants.VALIDATION_TASK_NOT_FOUND));
-        }
-
         await _cacheService.RemoveAsync($"{CacheKey}{updatedTask.Id}", CacheKey);
         await _cacheService.SetIfNotExistsAsync($"{CacheKey}{updatedTask.Id}", CacheKey, updatedTask);
+
         await ClearAllRequestFromCacheAsync(_cacheService);
 
         return TaskMapper.ToDTO(updatedTask);
@@ -135,17 +138,23 @@ public class TaskService(ITaskRepository taskRepository,
             return Result.Fail(new Error(Constants.VALIDATION_USER_NOT_FOUND));
         }
 
-        existingTask.AssignToUser(existingUser);
+        try
+        {
+            existingTask.AssignToUser(existingUser);
+            await _taskRepository.UpdateAsync(existingTask, cancellationToken);
+        }
+        catch (DomainException ex)
+        {
+            return Result.Fail(new Error(ex.Message));
+        }
 
         await _cacheService.RemoveAsync($"{CacheKey}{taskId}", CacheKey);
         await _cacheService.SetIfNotExistsAsync($"{CacheKey}{existingTask.Id}", CacheKey, existingTask);
-        await _taskRepository.UpdateAsync(existingTask, cancellationToken);
+        await ClearAllRequestFromCacheAsync(_cacheService);
 
         return Result.Ok();
     }
 
-    public async System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken)
-    {
+    public async System.Threading.Tasks.Task DeleteAllCacheAsync(CancellationToken cancellationToken) =>
         await _cacheService.IncrementVersion(CacheKey);
-    }
 }
