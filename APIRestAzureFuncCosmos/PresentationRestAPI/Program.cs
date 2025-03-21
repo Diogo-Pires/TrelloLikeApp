@@ -28,6 +28,8 @@ using Microsoft.IdentityModel.Tokens;
 using PresentationRestAPI.User.Middleswares;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
+using PresentationRestAPI;
+using Asp.Versioning.ApiExplorer;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
@@ -70,6 +72,8 @@ builder.Services.AddApiVersioning(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
@@ -156,6 +160,7 @@ builder.Services.AddTransient<IUserService, UserService>();
 
 
 var app = builder.Build();
+var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
 app.UseRouting();
 app.UseRateLimiter();
@@ -168,7 +173,13 @@ app.UseAuthorization();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        foreach (var description in provider.ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant()); 
+        } 
+    });
 }
 app.UseHttpsRedirection();
 app.UseExceptionHandler();

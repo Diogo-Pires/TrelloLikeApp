@@ -1,6 +1,5 @@
 using Application.User.DTOs;
 using Application.User.Interfaces;
-using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PresentationRestAPI.DTOs;
@@ -8,12 +7,11 @@ using Shared.Consts;
 
 namespace PresentationRestAPI.User;
 
+
 [ApiController]
 [Authorize]
 [Produces(UtilityConsts.APPJSON)]
-[Route("[controller]/v{version:apiVersion}")]
 [Route("[controller]")]
-[ApiVersion("1.0")]
 public class UsersController(IUserService userService) : ControllerBase
 {
     private readonly IUserService _userService = userService;
