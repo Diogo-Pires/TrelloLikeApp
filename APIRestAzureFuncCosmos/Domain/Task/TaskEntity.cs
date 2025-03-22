@@ -35,6 +35,9 @@ public class TaskEntity
     [JsonProperty("assignedUseBrEmail")]
     public string? AssignedUserEmail { get; private set; }
 
+    [JsonProperty("_etag")]
+    public string? ETag { get; private set; } = null;
+
     [JsonIgnore]
     public ITaskState State => TaskStateManager.GetState(Status);
 

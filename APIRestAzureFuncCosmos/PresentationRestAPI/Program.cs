@@ -30,10 +30,17 @@ using System.Threading.RateLimiting;
 using Asp.Versioning;
 using PresentationRestAPI;
 using Asp.Versioning.ApiExplorer;
+using Application.Kafka.Settings;
+using Application.Kafka.Interfaces;
+using Application.Kafka;
+using Application.Task.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
 
+var configuration = builder.Configuration;
+
+//Rate Limiter
 builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
@@ -53,6 +60,7 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = 429;
 });
 
+//Versioning
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -69,22 +77,27 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+//Regular stuff
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 builder.Services.AddMemoryCache();
+
+//CORS
+var corsSettings = configuration.GetSection("CORS:FrontendURLs").Get<List<string>>()!;
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsPolicyName, builder =>
     {
-        builder.WithOrigins("http://localhost:5173", "https://localhost:5173")
+        builder.WithOrigins([.. corsSettings])
                .AllowAnyHeader()
                .AllowAnyMethod()
                .AllowCredentials();
     });
 });
 
+//Authentication and authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
@@ -102,11 +115,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+
+//Helpers
 builder.Services.AddHealthChecks();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+//Observability
 builder.Services.AddLogging(logging =>
 {
     logging.AddOpenTelemetry(options =>
@@ -118,9 +134,6 @@ builder.Services.AddLogging(logging =>
     });
 });
 
-var configuration = builder.Configuration;
-
-////To start jaeger locally, docker run --name jaeger -p 16686:16686 -p 4317:4317 -p 4318:4318 -p 6831:6831/udp jaegertracing/all-in-one:latest
 builder.Services.AddOpenTelemetry()
         .WithTracing(tracing => tracing
             .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(UtilityConsts.APP_NAME))
@@ -137,15 +150,23 @@ builder.Services.AddOpenTelemetry()
             .AddConsoleExporter()
         );
 
-var cosmosSettings = configuration.GetSection("CosmosDb").Get<CosmosDbSettings>()!;
 
-//To start redis locally, docker run --name redis -p 6379:6379 -d redis
+//Redis
+var redisUrl = configuration.GetSection("Redis:Url").Get<string>()!;
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+    options.Configuration = redisUrl;
     options.InstanceName = UtilityConsts.APP_NAME;
 });
 
+var cosmosSettings = configuration.GetSection("CosmosDb").Get<CosmosDbSettings>()!;
+
+//Configuration
+builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafka"));
+
+//DIs
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(TaskAssignedNotificationHandler).Assembly));
+builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
 builder.Services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddSingleton<IHybridCacheService, HybridCacheService>();
 builder.Services.AddSingleton(x => new CosmosClient(cosmosSettings.Endpoint, cosmosSettings.Key));
@@ -169,7 +190,6 @@ app.UseAuthentication();
 app.UseMiddleware<UserValidationMiddleware>(); 
 app.UseAuthorization();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
