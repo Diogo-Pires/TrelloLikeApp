@@ -8,6 +8,7 @@ using Domain.User.Interfaces;
 using FluentResults;
 using Infrastructure.Cache;
 using Infrastructure.Cache.Interfaces;
+using MediatR;
 using Shared.Consts;
 using Shared.Interfaces;
 
@@ -16,12 +17,14 @@ namespace Application.Task.Services;
 public class TaskService(ITaskRepository taskRepository,
                          IUserRepository userRepository,
                          IHybridCacheService hybridCacheService,
+                         IMediator mediator,
                          IDateTimeProvider dateTimeProvider) : BaseHybridCacheService, ITaskService
 {
     private readonly ITaskRepository _taskRepository = taskRepository;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IHybridCacheService _cacheService = hybridCacheService;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly IMediator _mediator = mediator;
 
     public override string CacheKey { get => "tasks:"; }
 
@@ -124,7 +127,9 @@ public class TaskService(ITaskRepository taskRepository,
         return result;
     }
 
-    public async Task<Result> AssignTaskToUserAsync(Guid taskId, string email, CancellationToken cancellationToken)
+    public async Task<Result> AssignTaskToUserAsync(Guid taskId,
+                                                    string email,
+                                                    CancellationToken cancellationToken)
     {
         var existingTask = await _taskRepository.GetByIdAsync(taskId, cancellationToken);
         if (existingTask == null)
@@ -142,6 +147,7 @@ public class TaskService(ITaskRepository taskRepository,
         {
             existingTask.AssignToUser(existingUser);
             await _taskRepository.UpdateAsync(existingTask, cancellationToken);
+            await _mediator.Send(new Commands.TaskAssignedNotificationCommand(taskId, email) , cancellationToken);
         }
         catch (DomainException ex)
         {
