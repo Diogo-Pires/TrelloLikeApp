@@ -30,10 +30,10 @@ using System.Threading.RateLimiting;
 using Asp.Versioning;
 using PresentationRestAPI;
 using Asp.Versioning.ApiExplorer;
-using Application.Kafka.Settings;
 using Application.Kafka.Interfaces;
 using Application.Kafka;
 using Application.Task.Handlers;
+using Shared.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
@@ -143,6 +143,8 @@ builder.Services.AddOpenTelemetry()
             .AddConsoleExporter()
             .AddOtlpExporter()
         )
+        .WithTracing(tracing => tracing.AddSource("KafkaProducer"))
+        //.WithMetrics(metrics => metrics.AddMeter("KafkaMetrics"))
         .WithMetrics(metrics => metrics
             .AddMeter(UtilityConsts.APP_NAME)
             .AddAspNetCoreInstrumentation()

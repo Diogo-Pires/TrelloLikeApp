@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presentation.Tests", "Prese
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationRestAPI", "PresentationRestAPI\PresentationRestAPI.csproj", "{953C12CA-0125-41EA-91C6-5302886AD837}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaWorker", "KafkaWorker\KafkaWorker.csproj", "{B743EB7E-108B-4C24-92F3-C4984749D1CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventProcessing", "KafkaWorker\EventProcessing.csproj", "{B743EB7E-108B-4C24-92F3-C4984749D1CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

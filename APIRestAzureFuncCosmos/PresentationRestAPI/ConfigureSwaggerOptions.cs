@@ -6,13 +6,11 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace PresentationRestAPI;
 
-public class ConfigureSwaggerOptions
-    : IConfigureNamedOptions<SwaggerGenOptions>
+public class ConfigureSwaggerOptions(
+    IApiVersionDescriptionProvider provider)
+        : IConfigureNamedOptions<SwaggerGenOptions>
 {
-    private readonly IApiVersionDescriptionProvider provider;
-
-    public ConfigureSwaggerOptions(
-        IApiVersionDescriptionProvider provider) => this.provider = provider;
+    private readonly IApiVersionDescriptionProvider provider = provider;
 
     public void Configure(SwaggerGenOptions options)
     {
@@ -24,7 +22,7 @@ public class ConfigureSwaggerOptions
         }
     }
 
-    public void Configure(string name, SwaggerGenOptions options)
+    public void Configure(string? name, SwaggerGenOptions options)
     {
         Configure(options);
     }
