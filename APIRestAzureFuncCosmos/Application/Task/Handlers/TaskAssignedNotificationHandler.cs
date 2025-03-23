@@ -1,8 +1,8 @@
 ﻿using Application.Kafka.Interfaces;
-using Application.Kafka.Settings;
 using Application.Task.Commands;
 using MediatR;
 using Microsoft.Extensions.Options;
+using Shared.Settings;
 
 namespace Application.Task.Handlers;
 
@@ -14,5 +14,5 @@ public class TaskAssignedNotificationHandler(
     private readonly KafkaSettings _kafkaOptions = options.Value;
 
     public async System.Threading.Tasks.Task Handle(TaskAssignedNotificationCommand request, CancellationToken cancellationToken) => 
-        await _kafkaProducerService.ProduceAsync(_kafkaOptions.TaskTopic, request);
+        await _kafkaProducerService.ProduceAsync(_kafkaOptions.TaskAssignedTopic, request);
 }
