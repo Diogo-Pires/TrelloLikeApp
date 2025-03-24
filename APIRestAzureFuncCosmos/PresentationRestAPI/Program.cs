@@ -30,10 +30,11 @@ using System.Threading.RateLimiting;
 using Asp.Versioning;
 using PresentationRestAPI;
 using Asp.Versioning.ApiExplorer;
-using Application.Kafka.Interfaces;
 using Application.Kafka;
 using Application.Task.Handlers;
-using Shared.Settings;
+using CuttingEdges.Kafka.Policies;
+using CuttingEdges.Kafka.Interfaces;
+using CuttingEdges.Kafka.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
@@ -168,6 +169,7 @@ builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafk
 
 //DIs
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(TaskAssignedNotificationHandler).Assembly));
+builder.Services.AddSingleton<KafkaResiliencePolicy>();
 builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
 builder.Services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddSingleton<IHybridCacheService, HybridCacheService>();

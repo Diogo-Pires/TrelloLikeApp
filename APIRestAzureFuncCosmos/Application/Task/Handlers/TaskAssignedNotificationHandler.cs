@@ -1,8 +1,8 @@
-﻿using Application.Kafka.Interfaces;
-using Application.Task.Commands;
+﻿using Application.Task.Commands;
+using CuttingEdges.Kafka.Interfaces;
+using CuttingEdges.Kafka.Settings;
 using MediatR;
 using Microsoft.Extensions.Options;
-using Shared.Settings;
 
 namespace Application.Task.Handlers;
 

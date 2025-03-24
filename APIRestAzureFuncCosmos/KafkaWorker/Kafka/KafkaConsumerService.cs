@@ -1,9 +1,9 @@
 ﻿using Confluent.Kafka;
+using CuttingEdges.Kafka.Policies;
+using CuttingEdges.Kafka.Settings;
 using EventProcessing.Middlewares;
 using Microsoft.Extensions.Options;
-using Shared.Settings;
-using Shared.Task.Model;
-using System.Text.Json;
+using Polly.Wrap;
 
 namespace EventProcessing.Kafka;
 
@@ -11,16 +11,19 @@ public abstract class KafkaConsumerService : BackgroundService
 {
     private readonly IConsumer<string, string> _consumer;
     private readonly ILogger<KafkaConsumerService> _logger;
+    private readonly AsyncPolicyWrap _policy;
     private readonly GlobalExceptionHandler _exceptionHandler;
 
     public KafkaConsumerService(string topic,
                                 string consumerGroup,
                                 IOptions<KafkaSettings> options,
                                 ILogger<KafkaConsumerService> logger,
+                                KafkaResiliencePolicy resiliencePolicy,
                                 GlobalExceptionHandler exceptionHandler)
     {
         _logger = logger;
-        _exceptionHandler = exceptionHandler;
+        _exceptionHandler = exceptionHandler; 
+        _policy = resiliencePolicy.CreateKafkaPolicy();
 
         var config = new ConsumerConfig
         {
@@ -53,17 +56,20 @@ public abstract class KafkaConsumerService : BackgroundService
         {
             try
             {
-                var consumeResult = _consumer.Consume(cancellationToken);
-                if (consumeResult == null &&
-                   consumeResult?.Message == null &&
-                   consumeResult?.Message.Value == null)
+                await _policy.ExecuteAsync(async () =>
                 {
-                    continue;
-                }
+                    var consumeResult = _consumer.Consume(cancellationToken);
+                    if (consumeResult == null &&
+                       consumeResult?.Message == null &&
+                       consumeResult?.Message.Value == null)
+                    {
+                        return;
+                    }
 
-                await ProcessMessageAsync(consumeResult.Message.Value, cancellationToken);
+                    await ProcessMessageAsync(consumeResult.Message.Value, cancellationToken);
 
-                _consumer.Commit();
+                    _consumer.Commit();
+                });
             }
             catch (OperationCanceledException)
             {

@@ -147,7 +147,7 @@ public class TaskService(ITaskRepository taskRepository,
         {
             existingTask.AssignToUser(existingUser);
             await _taskRepository.UpdateAsync(existingTask, cancellationToken);
-            await _mediator.Send(new Commands.TaskAssignedNotificationCommand(taskId, email) , cancellationToken);
+            await _mediator.Send(new Commands.TaskAssignedNotificationCommand(taskId, email), cancellationToken);
         }
         catch (DomainException ex)
         {

@@ -1,7 +1,9 @@
-﻿using Application.Kafka.Interfaces;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
+using CuttingEdges.Kafka.Interfaces;
+using CuttingEdges.Kafka.Policies;
+using CuttingEdges.Kafka.Settings;
 using Microsoft.Extensions.Options;
-using Shared.Settings;
+using Polly.Wrap;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -10,9 +12,10 @@ namespace Application.Kafka;
 public class KafkaProducerService : IKafkaProducerService
 {
     private readonly IProducer<string, string> _producer;
+    private readonly AsyncPolicyWrap _policy;
     private static readonly ActivitySource ActivitySource = new("KafkaProducer");
 
-    public KafkaProducerService(IOptions<KafkaSettings> options)
+    public KafkaProducerService(IOptions<KafkaSettings> options, KafkaResiliencePolicy resiliencePolicy)
     {
         var config = new ProducerConfig
         {
@@ -21,8 +24,8 @@ public class KafkaProducerService : IKafkaProducerService
             MessageTimeoutMs = options.Value.TimeoutMs
         };
 
-        _producer = new ProducerBuilder<string, string>(config)
-            .Build();
+        _producer = new ProducerBuilder<string, string>(config).Build();
+        _policy = resiliencePolicy.CreateKafkaPolicy();
     }
 
     public async System.Threading.Tasks.Task ProduceAsync<T>(string topic, T message)
@@ -30,10 +33,14 @@ public class KafkaProducerService : IKafkaProducerService
         using var activity = ActivitySource.StartActivity("Processing Kafka Message");
 
         activity?.SetTag("kafka.message", message);
-        await _producer.ProduceAsync(topic, new Message<string, string>
+
+        await _policy.ExecuteAsync(async () =>
         {
-            Key = Guid.NewGuid().ToString(),
-            Value = JsonSerializer.Serialize(message)
+            var result = await _producer.ProduceAsync(topic, new Message<string, string>
+            {
+                Key = Guid.NewGuid().ToString(),
+                Value = JsonSerializer.Serialize(message)
+            });
         });
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Shared.Settings;
+﻿namespace CuttingEdges.Kafka.Settings;
 
 public record KafkaSettings
 {
