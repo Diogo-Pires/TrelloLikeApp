@@ -4,7 +4,7 @@ namespace Infrastructure.Cache;
 
 public abstract class BaseHybridCacheService
 {
-    protected const string BASE_CACHEKEY_ALL = "all";
+    public const string BASE_CACHEKEY_ALL = "all";
 
     public abstract string CacheKey { get; }
 
