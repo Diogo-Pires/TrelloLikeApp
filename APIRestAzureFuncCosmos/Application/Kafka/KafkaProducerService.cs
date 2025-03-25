@@ -1,34 +1,20 @@
 ﻿using Confluent.Kafka;
 using CuttingEdges.Kafka.Interfaces;
 using CuttingEdges.Kafka.Policies;
-using CuttingEdges.Kafka.Settings;
-using Microsoft.Extensions.Options;
 using Polly.Wrap;
 using System.Diagnostics;
 using System.Text.Json;
 
 namespace Application.Kafka;
 
-public class KafkaProducerService : IKafkaProducerService
+public class KafkaProducerService(KafkaResiliencePolicy resiliencePolicy,
+                                  IProducer<string, string> producer) : IKafkaProducerService
 {
-    private readonly IProducer<string, string> _producer;
-    private readonly AsyncPolicyWrap _policy;
+    private readonly IProducer<string, string> _producer = producer;
+    private readonly AsyncPolicyWrap _policy = resiliencePolicy.CreateKafkaPolicy();
     private static readonly ActivitySource ActivitySource = new("KafkaProducer");
 
-    public KafkaProducerService(IOptions<KafkaSettings> options, KafkaResiliencePolicy resiliencePolicy)
-    {
-        var config = new ProducerConfig
-        {
-            BootstrapServers = options.Value.Url,
-            Acks = Acks.All, 
-            MessageTimeoutMs = options.Value.TimeoutMs
-        };
-
-        _producer = new ProducerBuilder<string, string>(config).Build();
-        _policy = resiliencePolicy.CreateKafkaPolicy();
-    }
-
-    public async System.Threading.Tasks.Task ProduceAsync<T>(string topic, T message)
+    public async System.Threading.Tasks.Task ProduceAsync<T>(string topic, T message, CancellationToken cancellationToken)
     {
         using var activity = ActivitySource.StartActivity("Processing Kafka Message");
 
@@ -40,7 +26,7 @@ public class KafkaProducerService : IKafkaProducerService
             {
                 Key = Guid.NewGuid().ToString(),
                 Value = JsonSerializer.Serialize(message)
-            });
+            }, cancellationToken);
         });
     }
 }

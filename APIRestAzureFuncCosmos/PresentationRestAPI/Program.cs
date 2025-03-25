@@ -35,6 +35,7 @@ using Application.Task.Handlers;
 using CuttingEdges.Kafka.Policies;
 using CuttingEdges.Kafka.Interfaces;
 using CuttingEdges.Kafka.Settings;
+using Confluent.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 var corsPolicyName = "AllowFrontend";
@@ -163,12 +164,23 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 var cosmosSettings = configuration.GetSection("CosmosDb").Get<CosmosDbSettings>()!;
+var kafkaSection = builder.Configuration.GetSection("Kafka");
+var kafkaSettings = kafkaSection.Get<KafkaSettings>();
 
 //Configuration
-builder.Services.Configure<KafkaSettings>(builder.Configuration.GetSection("Kafka"));
+builder.Services.Configure<KafkaSettings>(kafkaSection);
 
 //DIs
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(TaskAssignedNotificationHandler).Assembly));
+builder.Services.AddSingleton(
+    c => new ProducerBuilder<string, string>(
+        new ProducerConfig
+        {
+            BootstrapServers = kafkaSettings?.Url,
+            Acks = Acks.All,
+            MessageTimeoutMs = kafkaSettings?.TimeoutMs
+        }).Build()
+);
 builder.Services.AddSingleton<KafkaResiliencePolicy>();
 builder.Services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
 builder.Services.AddTransient<IDateTimeProvider, DateTimeProvider>();

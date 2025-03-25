@@ -2,5 +2,5 @@
 
 public interface IKafkaProducerService
 {
-    Task ProduceAsync<T>(string topic, T message);
+    Task ProduceAsync<T>(string topic, T message, CancellationToken cancellationToken);
 }
