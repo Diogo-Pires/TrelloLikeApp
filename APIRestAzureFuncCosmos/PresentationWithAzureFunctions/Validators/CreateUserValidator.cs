@@ -2,7 +2,7 @@
 using FluentValidation;
 using Shared.Consts;
 
-namespace Presentation.Validators;
+namespace PresentationWithAzureFunctions.Validators;
 
 public class CreateUserValidator : AbstractValidator<UserEntityDTO>
 {

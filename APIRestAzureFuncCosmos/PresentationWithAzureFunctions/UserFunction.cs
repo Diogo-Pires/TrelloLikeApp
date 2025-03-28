@@ -1,35 +1,27 @@
-﻿using Application.User.DTOs;
+﻿
+using Application.User.DTOs;
 using Application.User.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Presentation.DTOs;
-using Presentation.Interfaces;
+using PresentationWithAzureFunctions.DTOs;
 using Shared.Consts;
 using Shared.Validations;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
 
-namespace Presentation;
+namespace PresentationWithAzureFunctions;
 
 public class UserFunction(IUserService userService,
-                          IValidator<UserEntityDTO> createValidator, 
-                          IExceptionHandler exceptionHandler)
+                          IValidator<UserEntityDTO> createValidator)
 {
     const string ROUTE_NAME = "users";
     private readonly IUserService _userService = userService;
     private readonly IValidator<UserEntityDTO> _createValidator = createValidator;
-    private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
 
     /// <summary>
     /// Get all users.
@@ -48,18 +40,11 @@ public class UserFunction(IUserService userService,
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<UserEntityDTO>), Description = "Get all the users")]
     [FunctionName(nameof(GetAllUsers))]
     public async Task<IActionResult> GetAllUsers(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var userList = await _userService.GetAllAsync(cancellationToken);
-            return new OkObjectResult(userList);
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
-        }
+        var userList = await _userService.GetAllAsync(cancellationToken);
+        return new OkObjectResult(userList);
     }
 
     /// <summary>
@@ -84,7 +69,7 @@ public class UserFunction(IUserService userService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "User was not found")]
     [FunctionName(nameof(GetUserByEmail))]
     public async Task<IActionResult> GetUserByEmail(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}/{{email}}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}/{{email}}")] HttpRequest req,
         string email,
         CancellationToken cancellationToken)
     {
@@ -106,10 +91,6 @@ public class UserFunction(IUserService userService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 
@@ -137,7 +118,7 @@ public class UserFunction(IUserService userService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = "Provided user was wrongly formated")]
     [FunctionName(nameof(CreateUser))]
     public async Task<IActionResult> CreateUser(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.POST, Route = $"{ROUTE_NAME}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.POST, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -152,7 +133,7 @@ public class UserFunction(IUserService userService,
             }
 
             var createdUser = await _userService.CreateAsync(createUserDto, cancellationToken);
-            if(createdUser.IsFailed)
+            if (createdUser.IsFailed)
             {
                 return new BadRequestObjectResult(ApiErrorResponse.Build(createdUser.Errors));
             }
@@ -167,10 +148,6 @@ public class UserFunction(IUserService userService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 }
