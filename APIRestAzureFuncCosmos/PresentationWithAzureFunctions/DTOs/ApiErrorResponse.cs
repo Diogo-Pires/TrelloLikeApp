@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Linq;
-
-namespace Presentation.DTOs;
+﻿namespace PresentationWithAzureFunctions.DTOs;
 
 public class ApiErrorResponse
 {

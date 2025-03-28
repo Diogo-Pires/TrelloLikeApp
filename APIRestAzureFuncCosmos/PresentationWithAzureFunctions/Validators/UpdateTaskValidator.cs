@@ -3,7 +3,7 @@ using FluentValidation;
 using Shared.Consts;
 using Shared.Interfaces;
 
-namespace Presentation.Validators;
+namespace PresentationWithAzureFunctions.Validators;
 
 public class UpdateTaskValidator : AbstractValidator<TaskEntityDTO>
 {

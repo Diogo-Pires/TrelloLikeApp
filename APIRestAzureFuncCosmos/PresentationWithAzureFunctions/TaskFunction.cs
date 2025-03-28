@@ -3,33 +3,25 @@ using Application.Task.Interfaces;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Presentation.DTOs;
-using Presentation.Interfaces;
+using PresentationWithAzureFunctions.DTOs;
 using Shared.Consts;
 using Shared.Validations;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Presentation;
+namespace PresentationWithAzureFunctions;
 
 public class TaskFunction(ITaskService taskService,
-                          IExceptionHandler exceptionHandler,
                           IValidator<TaskEntityDTO> createValidator,
                           IValidator<TaskEntityDTO> updateValidator)
 {
     const string ROUTE_NAME = "tasks";
     private readonly ITaskService _taskService = taskService;
-    private readonly IExceptionHandler _exceptionHandler = exceptionHandler;
     private readonly IValidator<TaskEntityDTO> _createValidator = createValidator;
     private readonly IValidator<TaskEntityDTO> _updateValidator = updateValidator;
 
@@ -50,18 +42,11 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: UtilityConsts.APPJSON, bodyType: typeof(List<TaskEntityDTO>), Description = "Get all the tasks")]
     [FunctionName(nameof(GetAllTasks))]
     public async Task<IActionResult> GetAllTasks(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var taskList = await _taskService.GetAllAsync(cancellationToken);
-            return new OkObjectResult(taskList);
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
-        }
+        var taskList = await _taskService.GetAllAsync(cancellationToken);
+        return new OkObjectResult(taskList);
     }
 
     /// <summary>
@@ -86,7 +71,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     [FunctionName(nameof(GetTaskById))]
     public async Task<IActionResult> GetTaskById(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}/{{id}}")] HttpRequest req, 
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Anonymous, UtilityConsts.GET, Route = $"{ROUTE_NAME}/{{id}}")] HttpRequest req,
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -108,10 +93,6 @@ public class TaskFunction(ITaskService taskService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 
@@ -140,7 +121,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.BadRequest, Description = "Provided task was wrongly formated")]
     [FunctionName(nameof(CreateTask))]
     public async Task<IActionResult> CreateTask(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.POST, Route = $"{ROUTE_NAME}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Anonymous, UtilityConsts.POST, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -148,14 +129,14 @@ public class TaskFunction(ITaskService taskService,
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
             var createTaskDto = JsonConvert.DeserializeObject<TaskEntityDTO>(requestBody);
 
-            var validationResult = await _createValidator.ValidateAsync(createTaskDto, cancellationToken);
+            var validationResult = await _createValidator.ValidateAsync(createTaskDto!, cancellationToken);
             if (!validationResult.IsValid)
             {
                 return new BadRequestObjectResult(ApiErrorResponse.Build(validationResult.Errors));
             }
 
-            var createdTask = await _taskService.CreateAsync(createTaskDto, cancellationToken);
-            if(createdTask.IsFailed)
+            var createdTask = await _taskService.CreateAsync(createTaskDto!, cancellationToken);
+            if (createdTask.IsFailed)
             {
                 return new BadRequestObjectResult(ApiErrorResponse.Build(createdTask.Errors));
             }
@@ -170,10 +151,6 @@ public class TaskFunction(ITaskService taskService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 
@@ -205,7 +182,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     [FunctionName(nameof(UpdateTask))]
     public async Task<IActionResult> UpdateTask(
-        [HttpTrigger(AuthorizationLevel.Function, UtilityConsts.PUT, Route = $"{ROUTE_NAME}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Function, UtilityConsts.PUT, Route = $"{ROUTE_NAME}")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         try
@@ -213,13 +190,13 @@ public class TaskFunction(ITaskService taskService,
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync(cancellationToken);
             var updateTaskDto = JsonConvert.DeserializeObject<TaskEntityDTO>(requestBody);
 
-            var validationResult = await _updateValidator.ValidateAsync(updateTaskDto, cancellationToken);
+            var validationResult = await _updateValidator.ValidateAsync(updateTaskDto!, cancellationToken);
             if (!validationResult.IsValid)
             {
                 return new BadRequestObjectResult(ApiErrorResponse.Build(validationResult.Errors));
             }
 
-            var updatedTask = await _taskService.UpdateAsync(updateTaskDto, cancellationToken);
+            var updatedTask = await _taskService.UpdateAsync(updateTaskDto!, cancellationToken);
             if (updatedTask.IsFailed)
             {
                 return new BadRequestObjectResult(ApiErrorResponse.Build(updatedTask.Errors));
@@ -230,10 +207,6 @@ public class TaskFunction(ITaskService taskService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 
@@ -259,7 +232,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: UtilityConsts.APPJSON, bodyType: typeof(ErrorResponse), Description = "Model for errors")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "Task was not found")]
     public async Task<IActionResult> DeleteTask(
-        [HttpTrigger(AuthorizationLevel.Function, UtilityConsts.DELETE, Route = $"{ROUTE_NAME}/{{id}}")] HttpRequest req, 
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Function, UtilityConsts.DELETE, Route = $"{ROUTE_NAME}/{{id}}")] HttpRequest req,
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -281,10 +254,6 @@ public class TaskFunction(ITaskService taskService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 
@@ -312,7 +281,7 @@ public class TaskFunction(ITaskService taskService,
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Description = "User was not found")]
     [FunctionName(nameof(AssignedUserToATask))]
     public async Task<IActionResult> AssignedUserToATask(
-        [HttpTrigger(AuthorizationLevel.Anonymous, UtilityConsts.PATCH, Route = $"{ROUTE_NAME}/{{taskId}}/assign/{{email}}")] HttpRequest req,
+        [Microsoft.Azure.Functions.Worker.HttpTrigger(Microsoft.Azure.Functions.Worker.AuthorizationLevel.Anonymous, UtilityConsts.PATCH, Route = $"{ROUTE_NAME}/{{taskId}}/assign/{{email}}")] HttpRequest req,
         Guid taskId,
         string email,
         CancellationToken cancellationToken)
@@ -340,10 +309,6 @@ public class TaskFunction(ITaskService taskService,
         catch (ArgumentException ex)
         {
             return new BadRequestObjectResult(ApiErrorResponse.Build(ex.Message));
-        }
-        catch (Exception ex)
-        {
-            return _exceptionHandler.HandleException(ex);
         }
     }
 }
