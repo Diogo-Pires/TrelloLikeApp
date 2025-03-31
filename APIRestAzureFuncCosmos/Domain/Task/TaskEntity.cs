@@ -41,6 +41,11 @@ public class TaskEntity
     [JsonIgnore]
     public ITaskState State => TaskStateManager.GetState(Status);
 
+    public TaskEntity()
+    {
+            
+    }
+
     public TaskEntity(string title,
                       string description,
                       DateTime? deadline,
@@ -59,7 +64,7 @@ public class TaskEntity
         AssignedUserEmail = assignedUserEmail;
     }
 
-    public void SetCompletedAt(DateTime dateTime) => CompletedAt = dateTime;
+    public virtual void SetCompletedAt(DateTime dateTime) => CompletedAt = dateTime;
 
     public void UpdateTask(string title, string description, DateTime? deadline, TaskEntityStatus? newTaskEntityStatus)
     {
@@ -75,7 +80,7 @@ public class TaskEntity
         UpdateTaskState(newTaskEntityStatus);
     }
 
-    public void ChangeStatus(TaskEntityStatus newStatus)
+    public virtual void ChangeStatus(TaskEntityStatus newStatus)
     {
         TaskStateManager.ValidateStatusTransition(newStatus, State, Status);
         Status = newStatus;
