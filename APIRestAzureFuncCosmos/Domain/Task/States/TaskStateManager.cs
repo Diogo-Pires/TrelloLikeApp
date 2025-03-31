@@ -29,7 +29,7 @@ public static class TaskStateManager
         if (_statusToStateDictionary.TryGetValue(status, out var state))
             return state.Value;
 
-        throw new TaskStateException($"${Constants.VALIDATION_TASK_INVALID_STATUS}: {status}");
+        throw new TaskStateException($"{Constants.VALIDATION_TASK_INVALID_STATUS}: {status}");
     }
 
     public static void ValidateStatusTransition(TaskEntityStatus newStatus,
