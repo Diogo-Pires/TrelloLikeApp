@@ -48,6 +48,23 @@ Run the application:
 Run unit tests with:
  - dotnet test
 
+### Endpoints
+
+#### Tasks
+ - GET	/Tasks	Get all tasks
+ - POST	/Tasks	Create a new task
+ - PUT	/Tasks	Update a task
+ - DELETE	/Tasks	Delete all tasks
+ - GET	/Tasks/{id}	Get a task by ID
+ - DELETE	/Tasks/{id}	Delete a task by ID
+ - GET	/Tasks/assignedTo/{email}	Get tasks assigned to a specific user
+ - PATCH	/Tasks/{id}/assign/{email}	Assign a task to a user
+
+#### Users
+ - GET	/Users	Get all users
+ - DELETE	/Users	Delete all users
+ - GET	/Users/{email}	Get a user by email
+
 ### Future Improvements
 
  - Optimized queries and indexing in Cosmos DB
