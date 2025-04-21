@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a ongoing basic Trello-like application developed with .NET 8 and Azure Functions (Isolated model). The purpose of this project is to showcase my code and experiment with technologies that I cannot use at work.
+This is a **ongoing** basic Trello-like application developed with .NET 8 and Azure Functions (Isolated model). The purpose of this project is to showcase my code and experiment with technologies that I cannot use at work.
 
 ### Tech Stack
 
